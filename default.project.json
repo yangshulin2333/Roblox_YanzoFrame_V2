@@ -1,0 +1,30 @@
+{
+  "name": "CodexModuleDevDemo01",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Framework": {
+        "$path": "src/ReplicatedStorage/Framework"
+      },
+      "Module": {
+        "$path": "src/ReplicatedStorage/Module"
+      }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "Server": {
+        "$path": "src/ServerScriptService/Server"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "Client": {
+          "$path": "src/StarterPlayer/StarterPlayerScripts/Client"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+# Roblox Studio 文件和构建产物
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+sourcemap.json
+*.tmp
+.DS_Store
+
+# 本地工具状态，不进入公开仓库
+.agents/
+.codex/

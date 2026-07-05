@@ -1,0 +1,14 @@
+# 仓库内统一换行，减少 Windows / macOS / Linux 协作时的无意义 diff
+* text=auto
+
+.gitattributes text eol=lf
+
+*.lua text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# PowerShell 脚本在 Windows 使用，保留 CRLF
+*.ps1 text eol=crlf

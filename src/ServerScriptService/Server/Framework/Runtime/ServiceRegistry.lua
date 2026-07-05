@@ -1,0 +1,81 @@
+--!strict
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Logger = require(ReplicatedStorage.Framework.Shared.App.Logger)
+local Lifecycle = require(ReplicatedStorage.Framework.Shared.App.Lifecycle)
+local ServiceList = require(script.Parent.ServiceList)
+
+local ServiceRegistry = {}
+ServiceRegistry.__index = ServiceRegistry
+
+function ServiceRegistry.new()
+	local self = setmetatable({}, ServiceRegistry)
+	self._services = ServiceList
+
+	self._servicesByName = {}
+	self._initialized = false
+	self._started = false
+	self._context = {
+		Logger = Logger,
+		Services = self._servicesByName,
+	}
+	return self
+end
+
+function ServiceRegistry:GetService(name)
+	return self._servicesByName[name]
+end
+
+function ServiceRegistry:Init()
+	if self._initialized then
+		error("ServiceRegistry:Init() was called more than once", 2)
+	end
+
+	Logger.Info("ServiceRegistry", "初始化开始")
+
+	-- 把 ServiceList 这个数组，转换成 _servicesByName 这个字典。
+	for _, service in ipairs(self._services) do
+		Lifecycle.AssertModule(service, "Service")
+
+		if self._servicesByName[service.Name] ~= nil then
+			error("Duplicate service name: " .. service.Name, 2)
+		end
+
+		self._servicesByName[service.Name] = service --用 service.Name 作为 key，service 这张服务表作为 value，存进 registry._servicesByName service 就是服务表，ServiceList 里 require 的每个服务模块返回的表。
+		Logger.Info("ServiceRegistry", "注册了 " .. service.Name)
+	end
+
+	for _, service in ipairs(self._services) do
+		if service.Init ~= nil then
+			Logger.Info("ServiceRegistry", "初始化 " .. service.Name)
+			service:Init(self._context)
+		end
+	end
+
+	self._initialized = true
+	Logger.Info("ServiceRegistry", "初始化完成: " .. tostring(#self._services) .. " services")
+end
+
+function ServiceRegistry:Start()
+	if not self._initialized then
+		error("ServiceRegistry:Start() was called before Init()", 2)
+	end
+
+	if self._started then
+		error("ServiceRegistry:Start() was called more than once", 2)
+	end
+
+	Logger.Info("ServiceRegistry", "启动开始")
+
+	for _, service in ipairs(self._services) do
+		if service.Start ~= nil then
+			Logger.Info("ServiceRegistry", "启动 " .. service.Name)
+			service:Start() --循环调用每个服务的 Start 方法，启动服务。
+		end
+	end
+
+	self._started = true
+	Logger.Info("ServiceRegistry", "启动完成: " .. tostring(#self._services) .. " services")
+end
+
+return ServiceRegistry
