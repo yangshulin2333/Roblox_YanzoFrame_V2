@@ -2,7 +2,7 @@
 
 ## 当前定位
 
-Demo01 里的 Storage 不是完整 StorageModule。
+YanzoFrame_V0 里的 Storage 不是完整 StorageModule。
 
 它只是基础框架的一条最小存储边界，用来让后续模块可以先用内存数据验证逻辑。
 

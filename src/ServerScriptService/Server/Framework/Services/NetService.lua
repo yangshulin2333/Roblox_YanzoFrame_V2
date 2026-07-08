@@ -12,7 +12,7 @@ local NetService = {
 
 --[[
 	_logger	保存 Logger
-	_rootFolder	保存 ModuleDev_Remotes 文件夹
+	_rootFolder	保存 YanzoFrame_V0_Remotes 文件夹
 	_requestFolder	保存 ClientToServer/Requests
 	_clientEventFolder	保存 ClientToServer/Events
 	_serverEventFolder	保存 ServerToClient/Events
@@ -78,19 +78,19 @@ end
 function NetService:Init(context)
 	self._logger = context.Logger
 
-	local root = getOrCreateFolder(ReplicatedStorage, RemoteNames.RootFolder) --创建一个 ModuleDev_Remotes 文件夹在 ReplicatedStorage 下面
-	local clientToServer = getOrCreateFolder(root, RemoteNames.ClientToServerFolder) --创建一个 ClientToServer 文件夹在 ModuleDev_Remotes 下面
-	local serverToClient = getOrCreateFolder(root, RemoteNames.ServerToClientFolder) --创建一个 ServerToClient 文件夹在 ModuleDev_Remotes 下面
+	local root = getOrCreateFolder(ReplicatedStorage, RemoteNames.RootFolder) --创建一个 YanzoFrame_V0_Remotes 文件夹在 ReplicatedStorage 下面
+	local clientToServer = getOrCreateFolder(root, RemoteNames.ClientToServerFolder) --创建一个 ClientToServer 文件夹在 YanzoFrame_V0_Remotes 下面
+	local serverToClient = getOrCreateFolder(root, RemoteNames.ServerToClientFolder) --创建一个 ServerToClient 文件夹在 YanzoFrame_V0_Remotes 下面
 
 	--全局变量
-	self._rootFolder = root --引用类型，指向 ModuleDev_Remotes
+	self._rootFolder = root --引用类型，指向 YanzoFrame_V0_Remotes
 	self._requestFolder = getOrCreateFolder(clientToServer, RemoteNames.RequestFolder) --创建一个 Requests 文件夹在 ClientToServer 下面
 	self._clientEventFolder = getOrCreateFolder(clientToServer, RemoteNames.EventFolder) --创建一个 Events 文件夹在 ClientToServer 下面
 	self._serverEventFolder = getOrCreateFolder(serverToClient, RemoteNames.EventFolder) --创建一个 Events 文件夹在 ServerToClient 下面
 	--[[
 	NetService:Init(context) 完成后，Roblox 里应该有：
 		ReplicatedStorage
-		  ModuleDev_Remotes
+		  YanzoFrame_V0_Remotes
 		    ClientToServer
 		      Requests
 		      Events
@@ -98,7 +98,7 @@ function NetService:Init(context)
 		      Events
 
 		同时 NetService 表里保存了这些引用：
-		NetService._rootFolder = ModuleDev_Remotes
+		NetService._rootFolder = YanzoFrame_V0_Remotes
 		NetService._requestFolder = ClientToServer.Requests
 		NetService._clientEventFolder = ClientToServer.Events
 		NetService._serverEventFolder = ServerToClient.Events

@@ -41,7 +41,7 @@ try {
     }
 
     if (Get-Command rojo -ErrorAction SilentlyContinue) {
-        $buildPath = Join-Path ([System.IO.Path]::GetTempPath()) "Demo01_ModuleBase_Check.rbxlx"
+        $buildPath = Join-Path ([System.IO.Path]::GetTempPath()) "YanzoFrame_V0_ModuleBase_Check.rbxlx"
         & rojo build default.project.json --output $buildPath
         if ($LASTEXITCODE -ne 0) {
             throw "rojo build failed"

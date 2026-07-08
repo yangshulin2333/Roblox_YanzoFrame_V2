@@ -19,7 +19,7 @@ function StartupSmokeTestController:Init(context)
 end
 
 function StartupSmokeTestController:Start()
-	--task.defer 里的函数会记住当前的 self。 把这个函数稍后执行，不阻塞当前启动流程。
+	--task.defer 里的函数会记住当前的 self。 会等待服务端返回结果，如果直接同步执行，可能让客户端启动流程被网络请求卡住。
 	task.defer(function()
 		--核心代码，客户端向服务端发起 Framework.Ping 请求，不带 payload。
 		local result = self._net.Request(RemoteNames.FrameworkPing, {})

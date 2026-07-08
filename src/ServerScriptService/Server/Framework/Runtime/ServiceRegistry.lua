@@ -33,7 +33,7 @@ function ServiceRegistry:Init()
 
 	Logger.Info("ServiceRegistry", "初始化开始")
 
-	-- 把 ServiceList 这个数组，转换成 _servicesByName 这个字典。
+	-- 必须先注册所有服务，否则在调用 Init 时，服务之间的依赖关系可能无法满足。所以，先注册服务，再调用 Init 方法。
 	for _, service in ipairs(self._services) do
 		Lifecycle.AssertModule(service, "Service")
 
@@ -45,6 +45,7 @@ function ServiceRegistry:Init()
 		Logger.Info("ServiceRegistry", "注册了 " .. service.Name)
 	end
 
+	--第二轮，调用每个服务的 Init 方法，传入 context 上下文表。
 	for _, service in ipairs(self._services) do
 		if service.Init ~= nil then
 			Logger.Info("ServiceRegistry", "初始化 " .. service.Name)

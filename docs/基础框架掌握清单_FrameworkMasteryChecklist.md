@@ -63,7 +63,7 @@
 你需要能独立运行：
 
 ```powershell
-cd D:\AI\Codex\Codex_ModuleDev\Demo01
+cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V0
 stylua --check src
 selene src
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1

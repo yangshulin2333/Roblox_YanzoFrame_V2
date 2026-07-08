@@ -23,7 +23,7 @@ local function waitForFolder(parent, folderName)
 	return child
 end
 
---ReplicatedStorage/ModuleDev_Remotes
+--ReplicatedStorage/YanzoFrame_V0_Remotes
 function NetClient.GetRemoteFolder()
 	if rootFolder == nil then
 		rootFolder = waitForFolder(ReplicatedStorage, RemoteNames.RootFolder)
@@ -31,7 +31,7 @@ function NetClient.GetRemoteFolder()
 	return rootFolder
 end
 
---ReplicatedStorage/ModuleDev_Remotes/ClientToServer/Requests
+--ReplicatedStorage/YanzoFrame_V0_Remotes/ClientToServer/Requests
 function NetClient.GetRequestFolder()
 	if requestFolder == nil then
 		local clientToServerFolder = waitForFolder(NetClient.GetRemoteFolder(), RemoteNames.ClientToServerFolder)

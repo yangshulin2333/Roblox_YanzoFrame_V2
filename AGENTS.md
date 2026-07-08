@@ -1,10 +1,10 @@
-# Demo01 Agent Rules
+# YanzoFrame_V0 Agent Rules
 
-本项目是 `D:\AI\Codex\Codex_ModuleDev\Demo01` 的 Roblox 模块开发底座。
+本项目是 `D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V0` 的 Roblox 模块开发底座。
 
 ## 固定目标
 
-Demo01 是后续复制用的基础框架本体。
+YanzoFrame_V0 是后续复制用的基础框架本体。
 
 每次只打磨一个可复用模块。模块要能单独理解、单独验证、单独接入别的 Roblox 项目。
 

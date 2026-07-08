@@ -1,4 +1,4 @@
-# Codex Module Dev Demo01
+# YanzoFrame_V0
 
 这是一个 Roblox 可复用模块开发底座。
 
@@ -6,7 +6,7 @@
 
 ## 当前定位
 
-Demo01 是后续复制用的基础框架本体。
+YanzoFrame_V0 是后续复制用的基础框架本体。
 
 它只保留所有模块都会用到的最小能力：
 
@@ -49,10 +49,10 @@ Storage 在这里不是完整存储模块。它只是基础框架的一条最小
 ## 常用命令
 
 ```powershell
-cd D:\AI\Codex\Codex_ModuleDev\Demo01
+cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V0
 stylua --check src
 selene src
-rojo build default.project.json --output "$env:TEMP\Demo01.rbxlx"
+rojo build default.project.json --output "$env:TEMP\YanzoFrame_V0.rbxlx"
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ```
 
