@@ -10,6 +10,7 @@ StorageModuleSmokeTestService._services = nil
 local TEST_KEY = "__storage_module_smoke_test__"
 local TEST_VALUE = 1
 local DIRTY_VALUE = 999
+local TEST_MODULE_NAME = "__SmokeTest__"
 
 function StorageModuleSmokeTestService:Init(context)
 	self._logger = context.Logger
@@ -29,26 +30,36 @@ function StorageModuleSmokeTestService:Start()
 		error("OpenKey returned invalid storage data", 2)
 	end
 
+	if type(openedData.Settings) ~= "table" or openedData.Settings.Language ~= "zh-CN" then
+		error("OpenKey returned invalid settings data", 2)
+	end
+
+	if type(openedData.Modules) ~= "table" then
+		error("OpenKey returned invalid modules data", 2)
+	end
+
 	local updatedData = storageService:UpdateKey(TEST_KEY, function(data)
-		data.SmokeValue = TEST_VALUE
+		data.Modules[TEST_MODULE_NAME] = {
+			Value = TEST_VALUE,
+		}
 		return data
 	end)
-	if updatedData.SmokeValue ~= TEST_VALUE then
+	if updatedData.Modules[TEST_MODULE_NAME].Value ~= TEST_VALUE then
 		error("UpdateKey did not write smoke test value", 2)
 	end
 
 	local copiedData = storageService:GetKey(TEST_KEY)
-	copiedData.SmokeValue = DIRTY_VALUE
+	copiedData.Modules[TEST_MODULE_NAME].Value = DIRTY_VALUE
 
 	local currentData = storageService:GetKey(TEST_KEY)
-	if currentData.SmokeValue ~= TEST_VALUE then
+	if currentData.Modules[TEST_MODULE_NAME].Value ~= TEST_VALUE then
 		error("GetKey returned mutable internal storage data", 2)
 	end
 
 	storageService:RemoveKey(TEST_KEY)
 
 	local reopenedData = storageService:OpenKey(TEST_KEY)
-	if reopenedData.SmokeValue ~= nil then
+	if reopenedData.Modules[TEST_MODULE_NAME] ~= nil then
 		error("RemoveKey did not clear smoke test data", 2)
 	end
 

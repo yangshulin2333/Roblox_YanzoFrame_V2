@@ -70,21 +70,31 @@ StorageModule 负责读取、校验、写回。
 ```lua
 {
 	SchemaVersion = 1,
+	Settings = {
+		Language = "zh-CN",
+	},
+	Modules = {},
 }
 ```
 
 `SchemaVersion` 是 StorageModule 的基础字段，用于标记数据结构版本。
 
+`Settings.Language` 是当前唯一进入 Schema 的玩家偏好字段，只允许：
+
+- `zh-CN`
+- `en-US`
+
+`Modules` 是后续模块的数据扩展容器，当前不预填任何业务模块数据。
+
 当前不要提前加入：
 
 - `Coins`
 - `Items`
-- `Language`
 - `Shop`
 - `Inventory`
 - `QuestProgress`
 
-这些字段属于具体业务模块，应在真实调用方出现后再讨论是否加入 Schema。
+这些字段属于具体业务模块，应在真实调用方出现后再讨论是否放入 `Modules`。
 
 ## ProfileStore 关系
 
@@ -118,7 +128,7 @@ ShopModule / BagModule / RewardModule
 - `GetKey` 返回副本，外部修改不会污染内部数据。
 - `RemoveKey` 能清理测试数据。
 
-测试使用临时 key，不会把测试字段加入正式 Schema。
+测试使用临时 key，并把测试字段放在 `Modules.__SmokeTest__` 下，不会把测试字段加入正式 Schema。
 
 ## 进入代码修改前的判断标准
 

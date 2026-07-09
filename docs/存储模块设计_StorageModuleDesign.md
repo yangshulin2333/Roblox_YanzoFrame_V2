@@ -69,8 +69,18 @@ StorageService 提供：
 ```lua
 {
 	SchemaVersion = 1,
+	Settings = {
+		Language = "zh-CN",
+	},
+	Modules = {},
 }
 ```
+
+其中：
+
+- `SchemaVersion` 标记数据结构版本。
+- `Settings.Language` 保存玩家语言偏好，当前只支持 `zh-CN` 和 `en-US`。
+- `Modules` 是后续模块数据的扩展容器，当前不预填业务模块数据。
 
 不在基础框架里放：
 
