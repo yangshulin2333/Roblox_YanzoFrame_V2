@@ -1,14 +1,14 @@
-# YanzoFrame_V0
+# YanzoFrame_V1_StorageModule
 
-这是一个 Roblox 可复用模块开发底座。
+这是从 `YanzoFrame_V0` 复制出来的第一个正式 Roblox 可复用模块工程，用于学习和开发 `StorageModule`。
 
-它不是完整游戏工程，也不是任何具体游戏工程。它的目标是让每个模块可以单独学习、单独验证、最后再接入别的项目。
+它不是完整游戏工程，也不是任何具体游戏工程。它的目标是让 StorageModule 可以单独学习、单独验证、最后再接入别的项目。
 
 ## 当前定位
 
-YanzoFrame_V0 是后续复制用的基础框架本体。
+`YanzoFrame_V0` 已作为基础框架本体冻结。本项目是 V1 复制件，当前只做 StorageModule。
 
-它只保留所有模块都会用到的最小能力：
+当前仍保留 V0 的最小底座能力：
 
 - Rojo 项目映射
 - Server 启动入口
@@ -19,7 +19,7 @@ YanzoFrame_V0 是后续复制用的基础框架本体。
 - MemoryStorage / StorageService 基础边界
 - StartupSmokeTest
 
-Storage 在这里不是完整存储模块。它只是基础框架的一条最小数据边界，用来让后续模块可以先用内存数据验证逻辑。
+Storage 在当前阶段仍是最小内存边界。后续会按阶段讨论是否扩展为 DataStore / ProfileStore 适配器，不会一次性塞入完整线上存档系统。
 
 ## 当前不包含什么
 
@@ -49,10 +49,10 @@ Storage 在这里不是完整存储模块。它只是基础框架的一条最小
 ## 常用命令
 
 ```powershell
-cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V0
+cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
 stylua --check src
 selene src
-rojo build default.project.json --output "$env:TEMP\YanzoFrame_V0.rbxlx"
+rojo build default.project.json --output "$env:TEMP\YanzoFrame_V1_StorageModule.rbxlx"
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ```
 
@@ -114,7 +114,7 @@ rojo serve default.project.json --address 127.0.0.1 --port 34872
 
 ## 掌握顺序
 
-先完全掌握基础框架，再开始第一个正式模块。
+先确认复制件身份正确，再开始 StorageModule 的正式设计和实现。
 
 推荐顺序：
 
@@ -125,6 +125,7 @@ rojo serve default.project.json --address 127.0.0.1 --port 34872
 5. `NetService` / `NetClient`：理解前后端通信边界。
 6. `StorageService` / `MemoryStorage`：理解基础存储边界。
 7. `StartupSmokeTest`：理解框架是否成功启动。
+8. `StorageModule`：再讨论 Schema、适配器、保存时机和失败处理。
 
 掌握检查见：
 

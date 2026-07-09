@@ -1,14 +1,17 @@
-# YanzoFrame_V0 Agent Rules
+# YanzoFrame_V1_StorageModule Agent Rules
 
-本项目是 `D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V0` 的 Roblox 模块开发底座。
+本项目是 `D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule`，从 `YanzoFrame_V0` 复制而来，用于开发第一个正式 Roblox 可复用模块：`StorageModule`。
 
 ## 固定目标
 
-YanzoFrame_V0 是后续复制用的基础框架本体。
+`YanzoFrame_V0` 已作为基础框架本体冻结。本项目只在复制件中推进 `StorageModule`，不再反向扩大 V0 底座。
 
-每次只打磨一个可复用模块。模块要能单独理解、单独验证、单独接入别的 Roblox 项目。
+当前固定目标：
 
-在用户明确完成基础框架学习前，不开始第一个正式模块。
+- 保持 V0 底座结构可理解、可验证。
+- 把 Storage 从“最小内存边界”逐步整理为独立模块。
+- 每次只推进一个清晰的小阶段。
+- 模块要能单独理解、单独验证、单独接入别的 Roblox 项目。
 
 ## 语言规则
 
@@ -23,12 +26,13 @@ YanzoFrame_V0 是后续复制用的基础框架本体。
 - Server 负责真实状态修改。
 - Client 只负责请求和显示。
 - 配置写在表里，不把数值散落在逻辑里。
+- 不把商店、背包、敌人、奖励等业务逻辑写进 StorageModule。
 
 ## Storage 边界
 
-基础框架保留 Storage，但只保留最小边界。
+当前复制件先保留 V0 的最小 Storage 边界，再按阶段扩展。
 
-允许：
+当前已存在：
 
 - `MemoryStorage`
 - `StorageService`
@@ -36,7 +40,7 @@ YanzoFrame_V0 是后续复制用的基础框架本体。
 - `Open / Get / Set / Update / Remove`
 - 默认数据校验
 
-禁止在基础框架阶段加入：
+身份对齐阶段禁止加入：
 
 - DataStore
 - ProfileStore
@@ -45,7 +49,7 @@ YanzoFrame_V0 是后续复制用的基础框架本体。
 - JSON / Excel 导入导出
 - 业务字段，例如 Coins、Items、Shop、Inventory
 
-完整 StorageModule 以后作为第一个正式模块单独开发。
+后续进入 StorageModule 设计时，必须先讨论接口、Schema、失败处理、DataStore/ProfileStore 是否引入，再写代码。
 
 ## UI / Studio 边界
 

@@ -1,8 +1,8 @@
 # 基础框架掌握清单
 
-这个清单用于判断：是否可以开始第一个正式模块。
+这个清单用于判断：V1 复制件是否仍然保留 V0 底座的基础能力。
 
-在完成这些问题前，不进入完整 StorageModule 开发。
+在完成这些问题前，不进入完整 StorageModule 逻辑开发。
 
 ## 1. Rojo 映射
 
@@ -63,7 +63,7 @@
 你需要能独立运行：
 
 ```powershell
-cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V0
+cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
 stylua --check src
 selene src
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1

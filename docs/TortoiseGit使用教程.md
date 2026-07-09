@@ -5,7 +5,7 @@
 当前项目示例路径：
 
 ```text
-D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V0
+D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
 ```
 
 ## 1. 先理解 Git 和 SVN 的差别
@@ -30,7 +30,7 @@ D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V0
 进入项目文件夹：
 
 ```text
-D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V0
+D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
 ```
 
 在空白处右键，应该能看到：

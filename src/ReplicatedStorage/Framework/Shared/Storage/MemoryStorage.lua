@@ -61,7 +61,7 @@ function MemoryStorage:_createDefault()
 	return data
 end
 
----- 当前 YanzoFrame_V0 中 Open 和 Get 都会在 key 不存在时创建默认数据；Open 暂作为未来扩展入口，完整 StorageModule 阶段再决定是否保留或拆分职责。
+---- 当前 YanzoFrame_V1_StorageModule 中 Open 和 Get 都会在 key 不存在时创建默认数据；Open 暂作为未来扩展入口，完整 StorageModule 阶段再决定是否保留或拆分职责。
 --如果数据不存在，则创建默认数据的副本，并返回它。
 function MemoryStorage:Open(key)
 	key = self:_assertKey(key) --检查 key 是否是非空字符串

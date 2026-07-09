@@ -22,7 +22,7 @@ local scopeLevels = LogConfig.ScopeLevels or {}
 	message 具体日志内容
 ]]
 local function formatMessage(level, scope, message)
-	return string.format("[YanzoFrame_V0][%s][%s] %s", level, scope, message)
+	return string.format("[YanzoFrame_V1_StorageModule][%s][%s] %s", level, scope, message)
 end
 
 local function getLevelValue(level)

@@ -1,10 +1,10 @@
-# Storage 基础边界设计
+# StorageModule 设计说明
 
 ## 当前定位
 
-YanzoFrame_V0 里的 Storage 不是完整 StorageModule。
+YanzoFrame_V1_StorageModule 从 YanzoFrame_V0 复制而来，用于把 Storage 从“基础边界”逐步发展成独立模块。
 
-它只是基础框架的一条最小存储边界，用来让后续模块可以先用内存数据验证逻辑。
+当前阶段仍保留 V0 的最小内存存储边界，用来先验证接口、启动流程和调用方式。
 
 ## 为什么基础框架要保留 Storage
 

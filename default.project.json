@@ -1,5 +1,5 @@
 {
-  "name": "YanzoFrame_V0",
+  "name": "YanzoFrame_V1_StorageModule",
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
