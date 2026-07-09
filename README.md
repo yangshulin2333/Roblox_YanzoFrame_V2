@@ -132,3 +132,9 @@ rojo serve default.project.json --address 127.0.0.1 --port 34872
 ```text
 docs/基础框架掌握清单_FrameworkMasteryChecklist.md
 ```
+
+StorageModule 使用规则见：
+
+```text
+docs/StorageModule使用规则_StorageModuleUsage.md
+```
