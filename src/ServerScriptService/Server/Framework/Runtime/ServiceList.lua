@@ -7,4 +7,5 @@ return {
 	require(FrameworkServices.NetService),
 	require(FrameworkServices.StorageService),
 	require(FrameworkServices.StartupSmokeTestService),
+	require(FrameworkServices.StorageModuleSmokeTestService),
 }

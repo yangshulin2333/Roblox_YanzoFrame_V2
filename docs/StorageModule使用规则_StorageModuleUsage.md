@@ -109,6 +109,17 @@ ShopModule / BagModule / RewardModule
 
 这样未来替换底层存储时，业务模块不需要重写。
 
+## 当前冒烟验证
+
+`StorageModuleSmokeTestService` 只验证 StorageModule 的接口规则：
+
+- `OpenKey` 能打开默认数据。
+- `UpdateKey` 能写入测试字段。
+- `GetKey` 返回副本，外部修改不会污染内部数据。
+- `RemoveKey` 能清理测试数据。
+
+测试使用临时 key，不会把测试字段加入正式 Schema。
+
 ## 进入代码修改前的判断标准
 
 开始扩展代码前，需要先能说清楚：
