@@ -108,3 +108,20 @@ StorageService 提供：
 3. 增加 DataStoreStorage。
 4. 再讨论是否使用 ProfileStore。
 5. 最后才做迁移、批量维护、JSON / Excel 工具。
+
+## 当前真实消费者
+
+`PlayerSettingsService` 是第一个使用 StorageModule 的服务。
+
+它不直接保存数据，只通过 `StorageService` 读写：
+
+```text
+Settings.Language
+```
+
+当前支持：
+
+- `zh-CN`
+- `en-US`
+
+这条链路用于证明：业务服务应该依赖 StorageModule，而不是直接依赖 `MemoryStorage`、DataStore 或 ProfileStore。

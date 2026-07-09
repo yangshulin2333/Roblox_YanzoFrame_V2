@@ -4,6 +4,7 @@ local StorageConfig = {}
 
 --架构版本号
 StorageConfig.SchemaVersion = 1
+StorageConfig.DefaultLanguage = "zh-CN"
 
 local SupportedLanguages = {
 	["zh-CN"] = true,
@@ -14,10 +15,14 @@ local SupportedLanguages = {
 StorageConfig.DefaultData = {
 	SchemaVersion = StorageConfig.SchemaVersion,
 	Settings = {
-		Language = "zh-CN",
+		Language = StorageConfig.DefaultLanguage,
 	},
 	Modules = {},
 }
+
+function StorageConfig.IsSupportedLanguage(language)
+	return SupportedLanguages[language] == true
+end
 
 function StorageConfig.Validate(data)
 	if type(data) ~= "table" then
@@ -32,7 +37,7 @@ function StorageConfig.Validate(data)
 		return false, "Settings必须是table类型"
 	end
 
-	if not SupportedLanguages[data.Settings.Language] then
+	if not StorageConfig.IsSupportedLanguage(data.Settings.Language) then
 		return false, "Settings.Language不支持"
 	end
 

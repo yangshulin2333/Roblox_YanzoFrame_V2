@@ -111,6 +111,37 @@ end)
 
 这些字段属于具体业务模块，应在真实调用方出现后再讨论是否放入 `Modules`。
 
+## 玩家设置消费者
+
+`PlayerSettingsService` 是当前第一个真实消费者。
+
+它负责读写玩家设置，但不直接管理底层存储：
+
+```text
+PlayerSettingsService
+  -> StorageService
+  -> MemoryStorage
+```
+
+当前只提供语言偏好接口：
+
+| 接口 | 作用 |
+|---|---|
+| `GetLanguage(player)` | 读取玩家语言 |
+| `SetLanguage(player, language)` | 设置玩家语言 |
+
+`SetLanguage` 只接受：
+
+- `zh-CN`
+- `en-US`
+
+这说明后续模块应该这样接入 StorageModule：
+
+```text
+具体模块负责业务含义。
+StorageModule 负责保存和校验玩家数据。
+```
+
 ## ProfileStore 关系
 
 业务模块不直接依赖 `ProfileStore`。
@@ -143,6 +174,7 @@ ShopModule / BagModule / RewardModule
 - `GetKey` 返回副本，外部修改不会污染内部数据。
 - `RemoveKey` 能清理测试数据。
 - `GetPlayerModuleData` / `UpdatePlayerModuleData` 能按模块命名空间读写数据。
+- `PlayerSettingsService` 能读取默认语言、写入英文、拒绝不支持语言。
 
 测试使用临时 key，并把测试字段放在 `Modules.__SmokeTest__` 下，不会把测试字段加入正式 Schema。
 

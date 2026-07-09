@@ -23,6 +23,11 @@ function StorageModuleSmokeTestService:Start()
 		error("StorageService is missing", 2)
 	end
 
+	local playerSettingsService = self._services.PlayerSettingsService
+	if playerSettingsService == nil then
+		error("PlayerSettingsService is missing", 2)
+	end
+
 	storageService:RemoveKey(TEST_KEY)
 
 	local openedData = storageService:OpenKey(TEST_KEY)
@@ -90,6 +95,38 @@ function StorageModuleSmokeTestService:Start()
 	end
 
 	storageService:ClosePlayer(fakePlayer)
+
+	local fakeSettingsPlayer = {
+		UserId = -2,
+		Name = "PlayerSettingsSmokeTest",
+	}
+
+	storageService:RemoveKey(tostring(fakeSettingsPlayer.UserId))
+	storageService:OpenPlayer(fakeSettingsPlayer)
+
+	if playerSettingsService:GetLanguage(fakeSettingsPlayer) ~= "zh-CN" then
+		error("PlayerSettingsService returned invalid default language", 2)
+	end
+
+	local ok, err = playerSettingsService:SetLanguage(fakeSettingsPlayer, "en-US")
+	if not ok then
+		error("PlayerSettingsService rejected supported language: " .. tostring(err), 2)
+	end
+
+	if playerSettingsService:GetLanguage(fakeSettingsPlayer) ~= "en-US" then
+		error("PlayerSettingsService did not write supported language", 2)
+	end
+
+	local invalidOk = playerSettingsService:SetLanguage(fakeSettingsPlayer, "ja-JP")
+	if invalidOk then
+		error("PlayerSettingsService accepted unsupported language", 2)
+	end
+
+	if playerSettingsService:GetLanguage(fakeSettingsPlayer) ~= "en-US" then
+		error("Unsupported language changed stored language", 2)
+	end
+
+	storageService:ClosePlayer(fakeSettingsPlayer)
 
 	storageService:RemoveKey(TEST_KEY)
 	self._logger.Info(self.Name, "StorageModule 冒烟测试通过")

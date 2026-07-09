@@ -12,6 +12,7 @@ try {
         "src/StarterPlayer/StarterPlayerScripts/Client/Framework/Runtime/ControllerRegistry.lua",
         "src/ServerScriptService/Server/Framework/Services/NetService.lua",
         "src/ServerScriptService/Server/Framework/Services/StorageService.lua",
+        "src/ServerScriptService/Server/Framework/Services/PlayerSettingsService.lua",
         "src/ServerScriptService/Server/Framework/Services/StorageModuleSmokeTestService.lua",
         "src/ReplicatedStorage/Framework/Shared/Storage/MemoryStorage.lua",
         "src/ReplicatedStorage/Module/Shared/Config/LogConfig.lua",
