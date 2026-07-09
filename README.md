@@ -56,6 +56,54 @@ rojo build default.project.json --output "$env:TEMP\YanzoFrame_V0.rbxlx"
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ```
 
+## 日志使用
+
+默认启动日志等级在这里配置：
+
+```text
+src/ReplicatedStorage/Module/Shared/Config/LogConfig.lua
+```
+
+当前默认是 `Warn`：正常启动只显示警告和错误，避免 Roblox Studio 输出窗口刷屏。
+
+调试时可以临时改成：
+
+```lua
+DefaultLevel = "Info"
+```
+
+需要追某一个模块时，优先只打开单个 scope：
+
+```lua
+ScopeLevels = {
+    NetService = "Debug",
+}
+```
+
+可用等级从少到多是：`Error`、`Warn`、`Info`、`Debug`。
+
+## Git 简化命令
+
+第一次先运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Git-Simple.ps1 setup
+```
+
+日常使用：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Git-Simple.ps1 status
+powershell -ExecutionPolicy Bypass -File .\scripts\Git-Simple.ps1 update
+powershell -ExecutionPolicy Bypass -File .\scripts\Git-Simple.ps1 save -Message "优化启动日志"
+```
+
+详细说明见：
+
+```text
+docs/Git简化工作流_GitSimpleWorkflow.md
+```
+
 ## Studio 使用方式
 
 ```powershell

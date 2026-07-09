@@ -224,7 +224,7 @@ function NetService:RegisterRequest(remoteName, handler) --"Framework.Ping", 匿
 	end
 
 	--打日志并返回 remote
-	self._logger.Info(self.Name, "注册请求: " .. remoteName)
+	self._logger.Debug(self.Name, "注册请求: " .. remoteName)
 	return remote
 end
 
@@ -252,7 +252,7 @@ function NetService:RegisterClientEvent(remoteName, handler)
 		end
 	end)
 
-	self._logger.Info(self.Name, "Registered client event: " .. remoteName)
+	self._logger.Debug(self.Name, "Registered client event: " .. remoteName)
 	return remote
 end
 

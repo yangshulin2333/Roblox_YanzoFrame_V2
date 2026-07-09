@@ -13,6 +13,7 @@ try {
         "src/ServerScriptService/Server/Framework/Services/NetService.lua",
         "src/ServerScriptService/Server/Framework/Services/StorageService.lua",
         "src/ReplicatedStorage/Framework/Shared/Storage/MemoryStorage.lua",
+        "src/ReplicatedStorage/Module/Shared/Config/LogConfig.lua",
         "src/ReplicatedStorage/Module/Shared/Config/StorageConfig.lua"
     )
 

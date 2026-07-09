@@ -83,13 +83,13 @@ end
 --打开某个玩家的数据。
 function StorageService:OpenPlayer(player)
 	local data = self:OpenKey(getPlayerKey(player))
-	self._logger.Info(self.Name, "已打开玩家数据： " .. player.Name)
+	self._logger.Debug(self.Name, "已打开玩家数据： " .. player.Name)
 	return data
 end
 
 function StorageService:ClosePlayer(player)
 	self:RemoveKey(getPlayerKey(player))
-	self._logger.Info(self.Name, "已关闭玩家数据： " .. player.Name)
+	self._logger.Debug(self.Name, "已关闭玩家数据： " .. player.Name)
 end
 
 function StorageService:GetPlayerData(player)

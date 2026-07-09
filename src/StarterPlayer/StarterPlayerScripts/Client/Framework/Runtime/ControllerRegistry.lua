@@ -34,7 +34,7 @@ function ControllerRegistry:Init()
 		error("ControllerRegistry:Init() 已经被调用过了", 2)
 	end
 
-	Logger.Info("ControllerRegistry", "初始化开始")
+	Logger.Debug("ControllerRegistry", "初始化开始")
 
 	--按顺序遍历ControllerList 数组表，存入 _controllersByName 字典表，键是控制器的 Name，值是控制器本身
 	for _, controller in ipairs(self._controllers) do
@@ -45,14 +45,14 @@ function ControllerRegistry:Init()
 		end
 
 		self._controllersByName[controller.Name] = controller
-		Logger.Info("ControllerRegistry", "已注册控制器: " .. controller.Name)
+		Logger.Debug("ControllerRegistry", "已注册控制器: " .. controller.Name)
 	end
 
 	--按顺序继续遍历数据表，调用每个控制器的 Init 方法，传入上下文
 	--self._context 是写在 ControllerRegistry:Init() 里，即self = registry。
 	for _, controller in ipairs(self._controllers) do
 		if controller.Init ~= nil then
-			Logger.Info("ControllerRegistry", "正在初始化: " .. controller.Name)
+			Logger.Debug("ControllerRegistry", "正在初始化: " .. controller.Name)
 			--StartupSmokeTestController.Init(StartupSmokeTestController表, registry._context)
 			controller:Init(self._context) --调用各个控制器的Init方法，传入上下文
 		end
@@ -71,11 +71,11 @@ function ControllerRegistry:Start()
 		error("ControllerRegistry:Start() was called more than once", 2)
 	end
 
-	Logger.Info("ControllerRegistry", "Start begin")
+	Logger.Debug("ControllerRegistry", "Start begin")
 
 	for _, controller in ipairs(self._controllers) do
 		if controller.Start ~= nil then
-			Logger.Info("ControllerRegistry", "Start " .. controller.Name)
+			Logger.Debug("ControllerRegistry", "Start " .. controller.Name)
 			controller:Start()
 		end
 	end
