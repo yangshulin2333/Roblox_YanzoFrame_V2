@@ -5,4 +5,5 @@ local FrameworkControllers = ClientRoot.Framework.Controllers
 
 return {
 	require(FrameworkControllers.StartupSmokeTestController),
+	require(FrameworkControllers.StorageModuleDemoController),
 }

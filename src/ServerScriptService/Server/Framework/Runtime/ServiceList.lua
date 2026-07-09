@@ -8,5 +8,4 @@ return {
 	require(FrameworkServices.StorageService),
 	require(FrameworkServices.PlayerSettingsService),
 	require(FrameworkServices.StartupSmokeTestService),
-	require(FrameworkServices.StorageModuleSmokeTestService),
 }

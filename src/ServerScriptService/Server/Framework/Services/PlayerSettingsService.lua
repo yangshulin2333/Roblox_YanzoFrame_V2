@@ -2,6 +2,8 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local RemoteNames = require(ReplicatedStorage.Framework.Shared.Net.RemoteNames)
+local NetResult = require(ReplicatedStorage.Framework.Shared.Net.NetResult)
 local StorageConfig = require(ReplicatedStorage.Module.Shared.Config.StorageConfig)
 
 local PlayerSettingsService = {
@@ -14,6 +16,34 @@ PlayerSettingsService._services = nil
 function PlayerSettingsService:Init(context)
 	self._logger = context.Logger
 	self._services = context.Services
+end
+
+function PlayerSettingsService:Start()
+	local netService = self._services.NetService
+	if netService == nil then
+		error("NetService is missing", 2)
+	end
+
+	netService:RegisterRequest(RemoteNames.PlayerSettingsGetLanguage, function(player, _payload)
+		return {
+			Language = self:GetLanguage(player),
+		}
+	end)
+
+	netService:RegisterRequest(RemoteNames.PlayerSettingsSetLanguage, function(player, payload)
+		if type(payload) ~= "table" or type(payload.Language) ~= "string" then
+			return NetResult.Err("INVALID_PAYLOAD", "Language payload is invalid")
+		end
+
+		local ok, err = self:SetLanguage(player, payload.Language)
+		if not ok then
+			return NetResult.Err(tostring(err), "Language is not supported")
+		end
+
+		return {
+			Language = self:GetLanguage(player),
+		}
+	end)
 end
 
 function PlayerSettingsService:_getStorageService()

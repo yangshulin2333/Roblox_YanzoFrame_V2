@@ -165,18 +165,28 @@ ShopModule / BagModule / RewardModule
 
 这样未来替换底层存储时，业务模块不需要重写。
 
-## 当前冒烟验证
+## 当前可见示例
 
-`StorageModuleSmokeTestService` 只验证 StorageModule 的接口规则：
+`StorageModuleDemoController` 会在 Studio Play 时创建一个小面板。
 
-- `OpenKey` 能打开默认数据。
-- `UpdateKey` 能写入测试字段。
-- `GetKey` 返回副本，外部修改不会污染内部数据。
-- `RemoveKey` 能清理测试数据。
-- `GetPlayerModuleData` / `UpdatePlayerModuleData` 能按模块命名空间读写数据。
-- `PlayerSettingsService` 能读取默认语言、写入英文、拒绝不支持语言。
+它验证的是一条真实链路：
 
-测试使用临时 key，并把测试字段放在 `Modules.__SmokeTest__` 下，不会把测试字段加入正式 Schema。
+```text
+客户端按钮
+  -> NetClient.Request
+  -> PlayerSettingsService
+  -> StorageService
+  -> MemoryStorage
+  -> 返回当前语言
+  -> 客户端更新面板文字
+```
+
+当前面板提供两个按钮：
+
+- `中文`
+- `English`
+
+点击按钮后，玩家语言偏好会保存到 `Settings.Language`，面板文字会跟着切换。
 
 ## 进入代码修改前的判断标准
 

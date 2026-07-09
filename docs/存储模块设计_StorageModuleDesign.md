@@ -125,3 +125,5 @@ Settings.Language
 - `en-US`
 
 这条链路用于证明：业务服务应该依赖 StorageModule，而不是直接依赖 `MemoryStorage`、DataStore 或 ProfileStore。
+
+Studio 中的 `StorageModuleDemoController` 会创建一个可见面板，通过客户端按钮调用 `PlayerSettingsService`，用于观察这条链路是否真的生效。

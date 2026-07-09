@@ -8,6 +8,8 @@ local RemoteNames = {
 	EventFolder = "Events",
 
 	FrameworkPing = "Framework.Ping",
+	PlayerSettingsGetLanguage = "PlayerSettings.GetLanguage",
+	PlayerSettingsSetLanguage = "PlayerSettings.SetLanguage",
 }
 
 return RemoteNames
