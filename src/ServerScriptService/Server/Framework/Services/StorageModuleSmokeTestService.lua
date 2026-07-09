@@ -63,6 +63,34 @@ function StorageModuleSmokeTestService:Start()
 		error("RemoveKey did not clear smoke test data", 2)
 	end
 
+	local fakePlayer = {
+		UserId = -1,
+		Name = "StorageModuleSmokeTest",
+	}
+
+	storageService:RemoveKey(tostring(fakePlayer.UserId))
+	storageService:OpenPlayer(fakePlayer)
+
+	storageService:UpdatePlayerModuleData(fakePlayer, TEST_MODULE_NAME, {
+		Value = 0,
+	}, function(moduleData)
+		moduleData.Value = TEST_VALUE
+		return moduleData
+	end)
+
+	local moduleData = storageService:GetPlayerModuleData(fakePlayer, TEST_MODULE_NAME)
+	if moduleData.Value ~= TEST_VALUE then
+		error("Player module data API did not write smoke test value", 2)
+	end
+
+	moduleData.Value = DIRTY_VALUE
+	local freshModuleData = storageService:GetPlayerModuleData(fakePlayer, TEST_MODULE_NAME)
+	if freshModuleData.Value ~= TEST_VALUE then
+		error("GetPlayerModuleData returned mutable internal module data", 2)
+	end
+
+	storageService:ClosePlayer(fakePlayer)
+
 	storageService:RemoveKey(TEST_KEY)
 	self._logger.Info(self.Name, "StorageModule 冒烟测试通过")
 end

@@ -60,6 +60,8 @@ StorageService 提供：
 | `GetPlayerData(player)` | 读取玩家数据 |
 | `SetPlayerData(player, data)` | 写入玩家数据 |
 | `UpdatePlayerData(player, fn)` | 修改玩家数据 |
+| `GetPlayerModuleData(player, moduleName)` | 读取某个模块的数据 |
+| `UpdatePlayerModuleData(player, moduleName, defaultModuleData, fn)` | 修改某个模块的数据 |
 | `ClosePlayer(player)` | 移除玩家内存数据 |
 
 ## 当前默认数据
@@ -81,6 +83,8 @@ StorageService 提供：
 - `SchemaVersion` 标记数据结构版本。
 - `Settings.Language` 保存玩家语言偏好，当前只支持 `zh-CN` 和 `en-US`。
 - `Modules` 是后续模块数据的扩展容器，当前不预填业务模块数据。
+
+业务模块应通过 `GetPlayerModuleData` / `UpdatePlayerModuleData` 访问自己的 `Modules[moduleName]`，不要直接散写根字段。
 
 不在基础框架里放：
 

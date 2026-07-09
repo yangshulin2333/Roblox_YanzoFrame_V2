@@ -54,6 +54,8 @@
 | `GetPlayerData(player)` | 读取玩家数据副本 | 用于显示、判断、调试 |
 | `UpdatePlayerData(player, updateFn)` | 修改玩家数据 | 正常业务修改优先使用 |
 | `SetPlayerData(player, data)` | 替换整份玩家数据 | 少用，仅用于初始化、修复、迁移等明确场景 |
+| `GetPlayerModuleData(player, moduleName)` | 读取某个模块的数据副本 | 业务模块读取自己的命名空间数据 |
+| `UpdatePlayerModuleData(player, moduleName, defaultModuleData, updateFn)` | 修改某个模块的数据 | 业务模块写入自己的命名空间数据 |
 | `ClosePlayer(player)` | 关闭玩家数据 | 玩家离开时由 `StorageService` 自动调用 |
 
 核心规则：
@@ -62,6 +64,19 @@
 业务模块只描述“我要怎么改数据”。
 StorageModule 负责读取、校验、写回。
 ```
+
+后续业务模块不要直接操作 `data.Modules`。优先使用模块命名空间接口：
+
+```lua
+StorageService:UpdatePlayerModuleData(player, "Shop", {
+	Purchased = {},
+}, function(shopData)
+	shopData.Purchased["ItemId"] = true
+	return shopData
+end)
+```
+
+这样 Shop、Bag、Reward 等模块只管理自己的数据区域，不把字段散落到玩家数据根表。
 
 ## Schema 规则
 
@@ -127,6 +142,7 @@ ShopModule / BagModule / RewardModule
 - `UpdateKey` 能写入测试字段。
 - `GetKey` 返回副本，外部修改不会污染内部数据。
 - `RemoveKey` 能清理测试数据。
+- `GetPlayerModuleData` / `UpdatePlayerModuleData` 能按模块命名空间读写数据。
 
 测试使用临时 key，并把测试字段放在 `Modules.__SmokeTest__` 下，不会把测试字段加入正式 Schema。
 

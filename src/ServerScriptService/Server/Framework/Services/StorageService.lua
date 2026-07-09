@@ -18,6 +18,25 @@ local function getPlayerKey(player)
 	return tostring(player.UserId)
 end
 
+local function assertModuleName(moduleName)
+	if type(moduleName) ~= "string" or moduleName == "" then
+		error("moduleName必须是非空字符串", 3)
+	end
+	return moduleName
+end
+
+local function deepCopy(value)
+	if type(value) ~= "table" then
+		return value
+	end
+
+	local copy = {}
+	for key, item in pairs(value) do
+		copy[deepCopy(key)] = deepCopy(item)
+	end
+	return copy
+end
+
 function StorageService:Init(context)
 	self._logger = context.Logger
 	-- self._services = context.Services
@@ -104,6 +123,42 @@ end
 
 function StorageService:UpdatePlayerData(player, updateFn)
 	return self:UpdateKey(getPlayerKey(player), updateFn)
+end
+
+function StorageService:GetPlayerModuleData(player, moduleName)
+	moduleName = assertModuleName(moduleName)
+
+	local data = self:GetPlayerData(player)
+	return data.Modules[moduleName]
+end
+
+function StorageService:UpdatePlayerModuleData(player, moduleName, defaultModuleData, updateFn)
+	moduleName = assertModuleName(moduleName)
+
+	if defaultModuleData ~= nil and type(defaultModuleData) ~= "table" then
+		error("defaultModuleData必须是table类型或nil", 2)
+	end
+
+	if type(updateFn) ~= "function" then
+		error("updateFn必须是function类型", 2)
+	end
+
+	local updatedData = self:UpdatePlayerData(player, function(data)
+		local moduleData = data.Modules[moduleName]
+		if moduleData == nil then
+			moduleData = deepCopy(defaultModuleData or {})
+			data.Modules[moduleName] = moduleData
+		end
+
+		local nextModuleData = updateFn(moduleData)
+		if nextModuleData ~= nil then
+			data.Modules[moduleName] = nextModuleData
+		end
+
+		return data
+	end)
+
+	return updatedData.Modules[moduleName]
 end
 
 return StorageService
