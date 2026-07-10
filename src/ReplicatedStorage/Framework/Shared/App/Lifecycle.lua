@@ -3,7 +3,7 @@
 local Lifecycle = {}
 
 --[[
-	module  被检查的模块表，比如 NetService / StorageService / StartupSmokeTestController
+	module  被检查的模块表，比如 NetService / StorageService / 任意 Controller
 	owner   模块类型文字，比如 "Service" 或 "Controller"
 ]]
 

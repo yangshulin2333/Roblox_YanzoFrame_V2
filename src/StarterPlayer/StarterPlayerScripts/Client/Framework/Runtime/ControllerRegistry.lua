@@ -53,7 +53,6 @@ function ControllerRegistry:Init()
 	for _, controller in ipairs(self._controllers) do
 		if controller.Init ~= nil then
 			Logger.Debug("ControllerRegistry", "正在初始化: " .. controller.Name)
-			--StartupSmokeTestController.Init(StartupSmokeTestController表, registry._context)
 			controller:Init(self._context) --调用各个控制器的Init方法，传入上下文
 		end
 	end

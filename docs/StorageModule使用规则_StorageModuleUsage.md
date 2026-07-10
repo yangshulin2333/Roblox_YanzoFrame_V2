@@ -165,29 +165,6 @@ ShopModule / BagModule / RewardModule
 
 这样未来替换底层存储时，业务模块不需要重写。
 
-## 当前可见示例
-
-`StorageModuleDemoController` 会在 Studio Play 时创建一个小面板。
-
-它验证的是一条真实链路：
-
-```text
-客户端按钮
-  -> NetClient.Request
-  -> PlayerSettingsService
-  -> StorageService
-  -> MemoryStorage
-  -> 返回当前语言
-  -> 客户端更新面板文字
-```
-
-当前面板提供两个按钮：
-
-- `中文`
-- `English`
-
-点击按钮后，玩家语言偏好会保存到 `Settings.Language`，面板文字会跟着切换。
-
 ## 进入代码修改前的判断标准
 
 开始扩展代码前，需要先能说清楚：

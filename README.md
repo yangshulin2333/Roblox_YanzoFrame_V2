@@ -17,7 +17,6 @@
 - ControllerRegistry
 - NetService / NetClient
 - MemoryStorage / StorageService 基础边界
-- StartupSmokeTest
 
 Storage 在当前阶段仍是最小内存边界。后续会按阶段讨论是否扩展为 DataStore / ProfileStore 适配器，不会一次性塞入完整线上存档系统。
 
@@ -124,8 +123,7 @@ rojo serve default.project.json --address 127.0.0.1 --port 34872
 4. `Logger` / `Lifecycle`：理解基础工具。
 5. `NetService` / `NetClient`：理解前后端通信边界。
 6. `StorageService` / `MemoryStorage`：理解基础存储边界。
-7. `StartupSmokeTest`：理解框架是否成功启动。
-8. `StorageModule`：再讨论 Schema、适配器、保存时机和失败处理。
+7. `StorageModule`：理解 Schema、内存存储、读取与更新接口。
 
 掌握检查见：
 
