@@ -110,6 +110,8 @@ rojo serve default.project.json --address 127.0.0.1 --port 34872
 
 然后在 Roblox Studio 中连接 Rojo 插件。
 
+修改 `default.project.json` 或首次执行 `wally install` 后，需要停止并重新运行 `rojo serve`，再让 Studio 重新连接。
+
 ## Studio 持久化验收
 
 只在单独的测试体验中开启 `Enable Studio Access to API Services`，不要连接正式线上数据。

@@ -17,7 +17,7 @@ try {
         "default.project.json",
         "wally.toml",
         "wally.lock",
-        "ServerPackages/ProfileStore.lua",
+        "ServerPackages/_Index/lm-loleris_profilestore@1.0.3/profilestore/ProfileStore.luau",
         "src/ServerScriptService/Server/Main.server.lua",
         "src/StarterPlayer/StarterPlayerScripts/Client/Main.client.lua",
         "src/ServerScriptService/Server/Framework/Runtime/ServiceRegistry.lua",
@@ -61,6 +61,15 @@ try {
         if ($LASTEXITCODE -ne 0) {
             throw "rojo build failed"
         }
+
+        $buildContent = Get-Content -Raw $buildPath
+        if ($buildContent -notmatch '<string name="Name">ProfileStore</string>') {
+            throw "ProfileStore is missing from Rojo build"
+        }
+        if ($buildContent -match '<string name="Name">_Index</string>') {
+            throw "Wally _Index must not be a runtime dependency"
+        }
+
         Remove-Item -LiteralPath $buildPath -Force -ErrorAction SilentlyContinue
     } else {
         Write-Host "SKIP rojo: command not found"

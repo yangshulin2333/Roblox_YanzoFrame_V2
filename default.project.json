@@ -14,7 +14,10 @@
     "ServerScriptService": {
       "$className": "ServerScriptService",
       "ServerPackages": {
-        "$path": "ServerPackages"
+        "$className": "Folder",
+        "ProfileStore": {
+          "$path": "ServerPackages/_Index/lm-loleris_profilestore@1.0.3/profilestore/ProfileStore.luau"
+        }
       },
       "Server": {
         "$path": "src/ServerScriptService/Server"
