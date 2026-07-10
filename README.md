@@ -114,29 +114,13 @@ rojo serve default.project.json --address 127.0.0.1 --port 34872
 
 只在单独的测试体验中开启 `Enable Studio Access to API Services`，不要连接正式线上数据。
 
-第一次按 F5 Play 后，点击顶部测试工具栏的 `Client / Server` 切换按钮，直到按钮显示 `Server`。确认 Explorer 中能看到 `ServerScriptService.Server`，再打开命令栏执行：
+临时的 `PersistenceVerificationService` 会在玩家档案打开后自动执行测试，不需要使用 Command Bar：
 
-```lua
-assert(game:GetService("RunService"):IsServer(), "Switch Studio playtest to Server mode first")
-local player = game.Players:GetPlayers()[1]
-local storage = require(game.ServerScriptService.Server.Framework.Services.StorageService)
-local result = storage:UpdatePlayerModuleData(player, "PersistenceCheck", { Value = 0 }, function(data)
-	data.Value += 1
-	return data
-end)
-print("PersistenceCheck", result.Value)
-```
+1. 第一次按 F5 Play，等待输出 `[StorageV11Check] PersistenceCheck = 1`。
+2. 停止测试，等待数秒后再次按 F5 Play。
+3. 第二次应输出 `[StorageV11Check] PersistenceCheck = 2`。
 
-停止并重新 Play，再切换到 `Server` 模式并执行：
-
-```lua
-assert(game:GetService("RunService"):IsServer(), "Switch Studio playtest to Server mode first")
-local player = game.Players:GetPlayers()[1]
-local storage = require(game.ServerScriptService.Server.Framework.Services.StorageService)
-print("PersistenceCheck", storage:GetPlayerModuleData(player, "PersistenceCheck").Value)
-```
-
-第二次输出应与第一次相同。测试结束后可通过 Creator Hub 的 Data Stores Manager 删除测试 key。
+第二次递增证明第一次数据已经保存并重新加载。验收通过后删除临时 Service，再创建 V1.1 稳定标签。
 
 ## 掌握顺序
 
