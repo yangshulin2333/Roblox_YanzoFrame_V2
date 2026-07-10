@@ -114,9 +114,10 @@ rojo serve default.project.json --address 127.0.0.1 --port 34872
 
 只在单独的测试体验中开启 `Enable Studio Access to API Services`，不要连接正式线上数据。
 
-第一次 Play 后，在服务端命令栏执行：
+第一次按 F5 Play 后，点击顶部测试工具栏的 `Client / Server` 切换按钮，直到按钮显示 `Server`。确认 Explorer 中能看到 `ServerScriptService.Server`，再打开命令栏执行：
 
 ```lua
+assert(game:GetService("RunService"):IsServer(), "Switch Studio playtest to Server mode first")
 local player = game.Players:GetPlayers()[1]
 local storage = require(game.ServerScriptService.Server.Framework.Services.StorageService)
 local result = storage:UpdatePlayerModuleData(player, "PersistenceCheck", { Value = 0 }, function(data)
@@ -126,9 +127,10 @@ end)
 print("PersistenceCheck", result.Value)
 ```
 
-停止并重新 Play，再在服务端命令栏执行：
+停止并重新 Play，再切换到 `Server` 模式并执行：
 
 ```lua
+assert(game:GetService("RunService"):IsServer(), "Switch Studio playtest to Server mode first")
 local player = game.Players:GetPlayers()[1]
 local storage = require(game.ServerScriptService.Server.Framework.Services.StorageService)
 print("PersistenceCheck", storage:GetPlayerModuleData(player, "PersistenceCheck").Value)
