@@ -7,5 +7,4 @@ return {
 	require(FrameworkServices.NetService),
 	require(FrameworkServices.StorageService),
 	require(FrameworkServices.PlayerSettingsService),
-	require(FrameworkServices.PersistenceVerificationService),
 }

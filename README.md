@@ -112,18 +112,6 @@ rojo serve default.project.json --address 127.0.0.1 --port 34872
 
 修改 `default.project.json` 或首次执行 `wally install` 后，需要停止并重新运行 `rojo serve`，再让 Studio 重新连接。
 
-## Studio 持久化验收
-
-只在单独的测试体验中开启 `Enable Studio Access to API Services`，不要连接正式线上数据。
-
-临时的 `PersistenceVerificationService` 会在玩家档案打开后自动执行测试，不需要使用 Command Bar：
-
-1. 第一次按 F5 Play，等待输出 `[StorageV11Check] PersistenceCheck = 1`。
-2. 停止测试，等待数秒后再次按 F5 Play。
-3. 第二次应输出 `[StorageV11Check] PersistenceCheck = 2`。
-
-第二次递增证明第一次数据已经保存并重新加载。验收通过后删除临时 Service，再创建 V1.1 稳定标签。
-
 ## 掌握顺序
 
 先确认复制件身份正确，再开始 StorageModule 的正式设计和实现。
