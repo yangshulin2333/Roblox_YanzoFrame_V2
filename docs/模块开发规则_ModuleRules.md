@@ -7,7 +7,7 @@
 | 思想 | 用在哪里 | 作用 |
 |---|---|---|
 | 模块化 | 每个功能一个 ModuleScript | 降低互相影响 |
-| 接口适配 | Storage 先定义用法，再换实现 | 以后可以从 MemoryStorage 换到 DataStore |
+| 接口适配 | Storage 先定义用法，再换实现 | MemoryStorage 和 ProfileStoreStorage 共用合同 |
 | 少量面向对象 | Registry / Storage 用 `new()` | 方便重复创建和测试 |
 
 ## Service 是什么
@@ -66,12 +66,6 @@ Config 是配置表。
 
 ## Storage 规则
 
-第一阶段只使用 MemoryStorage。
+`MemoryStorage` 用于本地逻辑测试；`ProfileStoreStorage` 用于正式玩家档案。
 
-原因：
-
-- 容易理解。
-- 容易调试。
-- 不会产生真实线上数据风险。
-
-等 StorageModule 学清楚后，再加 DataStore 或 ProfileStore 适配器。
+业务模块只调用 `StorageService`。读取和更新前必须保证玩家数据已经打开，玩家离开时必须关闭会话。

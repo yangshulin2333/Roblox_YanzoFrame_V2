@@ -53,10 +53,11 @@
 你需要能回答：
 
 - 为什么基础框架保留 Storage？
-- 为什么现在不做 DataStore？
+- `MemoryStorage` 和 `ProfileStoreStorage` 分别适合什么场景？
 - `MemoryStorage:Get()` 为什么返回副本？
 - `StorageService` 和 `MemoryStorage` 有什么区别？
-- `StorageConfig` 为什么只保留 `SchemaVersion`？
+- 为什么 `Get` 不允许在未打开时创建默认数据？
+- 为什么 `ClosePlayer` 不是删除玩家永久数据？
 
 ## 7. 验证
 
@@ -64,6 +65,7 @@
 
 ```powershell
 cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
+wally install
 stylua --check src
 selene src
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
@@ -71,8 +73,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 
 你还需要能在 Studio 中确认：
 
-- Server 输出 `服务端启动冒烟测试通过`
-- Client 输出 `客户端启动冒烟测试通过`
+- 玩家档案成功打开时不会被踢出。
+- 持久化测试中，退出再进入后测试字段仍然存在。
 
 ## 进入第一个模块前的标准
 

@@ -25,8 +25,13 @@ function PlayerSettingsService:Start()
 	end
 
 	netService:RegisterRequest(RemoteNames.PlayerSettingsGetLanguage, function(player, _payload)
+		local language, getError = self:GetLanguage(player)
+		if language == nil then
+			return NetResult.Err(tostring(getError), "Player data is not ready")
+		end
+
 		return {
-			Language = self:GetLanguage(player),
+			Language = language,
 		}
 	end)
 
@@ -37,7 +42,8 @@ function PlayerSettingsService:Start()
 
 		local ok, err = self:SetLanguage(player, payload.Language)
 		if not ok then
-			return NetResult.Err(tostring(err), "Language is not supported")
+			local message = err == "DATA_NOT_READY" and "Player data is not ready" or "Language is not supported"
+			return NetResult.Err(tostring(err), message)
 		end
 
 		return {
@@ -55,7 +61,12 @@ function PlayerSettingsService:_getStorageService()
 end
 
 function PlayerSettingsService:GetLanguage(player)
-	local data = self:_getStorageService():GetPlayerData(player)
+	local storageService = self:_getStorageService()
+	if not storageService:IsPlayerDataReady(player) then
+		return nil, "DATA_NOT_READY"
+	end
+
+	local data = storageService:GetPlayerData(player)
 	return data.Settings.Language
 end
 
@@ -64,7 +75,12 @@ function PlayerSettingsService:SetLanguage(player, language)
 		return false, "UNSUPPORTED_LANGUAGE"
 	end
 
-	self:_getStorageService():UpdatePlayerData(player, function(data)
+	local storageService = self:_getStorageService()
+	if not storageService:IsPlayerDataReady(player) then
+		return false, "DATA_NOT_READY"
+	end
+
+	storageService:UpdatePlayerData(player, function(data)
 		data.Settings.Language = language
 		return data
 	end)

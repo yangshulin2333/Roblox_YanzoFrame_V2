@@ -16,14 +16,13 @@
 - ServiceRegistry
 - ControllerRegistry
 - NetService / NetClient
-- MemoryStorage / StorageService 基础边界
+- MemoryStorage / ProfileStoreStorage / StorageService
 
-Storage 在当前阶段仍是最小内存边界。后续会按阶段讨论是否扩展为 DataStore / ProfileStore 适配器，不会一次性塞入完整线上存档系统。
+当前版本是 `StorageModule V1.1`：`MemoryStorage` 用于测试，`ProfileStoreStorage` 通过 ProfileStore 保存正式玩家档案。
 
 ## 当前不包含什么
 
-- 真实 DataStore
-- ProfileStore
+- 自制原生 DataStore 适配器
 - 数据迁移
 - 批量数据维护
 - JSON / Excel 导入导出
@@ -32,7 +31,6 @@ Storage 在当前阶段仍是最小内存边界。后续会按阶段讨论是否
 - 敌人系统
 - UI 自动布局
 - 外部素材系统
-- Wally 第三方依赖
 
 ## 文件夹含义
 
@@ -49,6 +47,7 @@ Storage 在当前阶段仍是最小内存边界。后续会按阶段讨论是否
 
 ```powershell
 cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
+wally install
 stylua --check src
 selene src
 rojo build default.project.json --output "$env:TEMP\YanzoFrame_V1_StorageModule.rbxlx"
@@ -111,6 +110,32 @@ rojo serve default.project.json --address 127.0.0.1 --port 34872
 
 然后在 Roblox Studio 中连接 Rojo 插件。
 
+## Studio 持久化验收
+
+只在单独的测试体验中开启 `Enable Studio Access to API Services`，不要连接正式线上数据。
+
+第一次 Play 后，在服务端命令栏执行：
+
+```lua
+local player = game.Players:GetPlayers()[1]
+local storage = require(game.ServerScriptService.Server.Framework.Services.StorageService)
+local result = storage:UpdatePlayerModuleData(player, "PersistenceCheck", { Value = 0 }, function(data)
+	data.Value += 1
+	return data
+end)
+print("PersistenceCheck", result.Value)
+```
+
+停止并重新 Play，再在服务端命令栏执行：
+
+```lua
+local player = game.Players:GetPlayers()[1]
+local storage = require(game.ServerScriptService.Server.Framework.Services.StorageService)
+print("PersistenceCheck", storage:GetPlayerModuleData(player, "PersistenceCheck").Value)
+```
+
+第二次输出应与第一次相同。测试结束后可通过 Creator Hub 的 Data Stores Manager 删除测试 key。
+
 ## 掌握顺序
 
 先确认复制件身份正确，再开始 StorageModule 的正式设计和实现。
@@ -122,8 +147,8 @@ rojo serve default.project.json --address 127.0.0.1 --port 34872
 3. `ServiceRegistry` / `ControllerRegistry`：理解模块启动顺序。
 4. `Logger` / `Lifecycle`：理解基础工具。
 5. `NetService` / `NetClient`：理解前后端通信边界。
-6. `StorageService` / `MemoryStorage`：理解基础存储边界。
-7. `StorageModule`：理解 Schema、内存存储、读取与更新接口。
+6. `MemoryStorage` / `ProfileStoreStorage`：理解测试后端和持久化后端。
+7. `StorageService`：理解打开、数据就绪、更新和关闭会话。
 
 掌握检查见：
 

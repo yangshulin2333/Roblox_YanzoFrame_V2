@@ -4,14 +4,27 @@ $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 Push-Location $Root
 
 try {
+    if (-not (Get-Command wally -ErrorAction SilentlyContinue)) {
+        throw "wally command not found"
+    }
+
+    & wally install
+    if ($LASTEXITCODE -ne 0) {
+        throw "wally install failed"
+    }
+
     $requiredFiles = @(
         "default.project.json",
+        "wally.toml",
+        "wally.lock",
+        "ServerPackages/ProfileStore.lua",
         "src/ServerScriptService/Server/Main.server.lua",
         "src/StarterPlayer/StarterPlayerScripts/Client/Main.client.lua",
         "src/ServerScriptService/Server/Framework/Runtime/ServiceRegistry.lua",
         "src/StarterPlayer/StarterPlayerScripts/Client/Framework/Runtime/ControllerRegistry.lua",
         "src/ServerScriptService/Server/Framework/Services/NetService.lua",
         "src/ServerScriptService/Server/Framework/Services/StorageService.lua",
+        "src/ServerScriptService/Server/Framework/Storage/ProfileStoreStorage.lua",
         "src/ServerScriptService/Server/Framework/Services/PlayerSettingsService.lua",
         "src/ReplicatedStorage/Framework/Shared/Storage/MemoryStorage.lua",
         "src/ReplicatedStorage/Module/Shared/Config/LogConfig.lua",

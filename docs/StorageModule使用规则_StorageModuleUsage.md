@@ -10,7 +10,7 @@
 - 玩家在线时读取和更新数据。
 - 玩家离开时关闭数据。
 - 写入前做基础结构校验。
-- 让底层存储以后可以从 `MemoryStorage` 替换为 `ProfileStoreStorage`。
+- 让业务代码可以在 `MemoryStorage` 和 `ProfileStoreStorage` 之间切换而无需重写。
 
 它不负责：
 
@@ -19,13 +19,11 @@
 - 奖励规则。
 - 多语言文本。
 - Excel 配置导出。
-- 真实 DataStore / ProfileStore 接入。
+- 排行榜和跨服务器全局状态。
 
 ## 当前阶段
 
-当前阶段只使用 `MemoryStorage`。
-
-这表示玩家数据只存在于当前服务器内存中，不会永久保存。当前目标是先学清楚数据生命周期和接口规则，不处理真实线上存档。
+当前默认使用 `ProfileStoreStorage`，由 ProfileStore 负责自动保存和会话锁。`MemoryStorage` 保留为不访问线上数据的测试后端。
 
 ## 数据生命周期
 
@@ -33,15 +31,15 @@
 玩家进入
   -> StorageService:OpenPlayer(player)
   -> 根据 player.UserId 打开数据
-  -> 没有数据时使用 DefaultData 创建
+  -> ProfileStore 加载档案；没有数据时使用 DefaultData 创建
+  -> 打开成功后 IsPlayerDataReady(player) 才为 true
 
 玩家在线
   -> 其他服务通过 StorageService 读取或更新数据
 
 玩家离开
   -> StorageService:ClosePlayer(player)
-  -> 当前阶段移除内存数据
-  -> 未来阶段保存并释放真实存档
+  -> ProfileStore 保存并释放会话
 ```
 
 `OpenPlayer` 只负责准备玩家数据，不负责给奖励、初始化背包、设置语言或读取配置表。
@@ -51,6 +49,7 @@
 | 接口 | 当前定位 | 使用建议 |
 |---|---|---|
 | `OpenPlayer(player)` | 打开玩家数据 | 玩家进入时由 `StorageService` 自动调用 |
+| `IsPlayerDataReady(player)` | 判断玩家档案是否已打开 | Remote 和业务操作前用于返回 `DATA_NOT_READY` |
 | `GetPlayerData(player)` | 读取玩家数据副本 | 用于显示、判断、调试 |
 | `UpdatePlayerData(player, updateFn)` | 修改玩家数据 | 正常业务修改优先使用 |
 | `SetPlayerData(player, data)` | 替换整份玩家数据 | 少用，仅用于初始化、修复、迁移等明确场景 |
@@ -120,7 +119,8 @@ end)
 ```text
 PlayerSettingsService
   -> StorageService
-  -> MemoryStorage
+  -> ProfileStoreStorage
+  -> ProfileStore
 ```
 
 当前只提供语言偏好接口：
@@ -146,7 +146,7 @@ StorageModule 负责保存和校验玩家数据。
 
 业务模块不直接依赖 `ProfileStore`。
 
-未来关系应保持为：
+当前正式关系是：
 
 ```text
 ShopModule / BagModule / RewardModule
@@ -155,7 +155,7 @@ ShopModule / BagModule / RewardModule
   -> ProfileStore
 ```
 
-当前关系是：
+测试关系是：
 
 ```text
 业务模块
@@ -163,7 +163,7 @@ ShopModule / BagModule / RewardModule
   -> MemoryStorage
 ```
 
-这样未来替换底层存储时，业务模块不需要重写。
+两条链路使用同一组 StorageService 接口，业务模块不需要重写。
 
 ## 进入代码修改前的判断标准
 
@@ -173,5 +173,5 @@ ShopModule / BagModule / RewardModule
 - `GetPlayerData` 为什么返回副本。
 - `UpdatePlayerData` 为什么是业务修改主入口。
 - `SetPlayerData` 为什么要少用。
-- `ClosePlayer` 未来为什么对应保存和释放。
+- `ClosePlayer` 为什么是保存和释放会话，而不是删除永久数据。
 - `MemoryStorage` 和 `ProfileStore` 为什么只是不同底层实现。

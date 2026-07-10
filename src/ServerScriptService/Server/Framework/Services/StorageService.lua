@@ -1,18 +1,20 @@
 --!strict
 
---StorageConfig 管规则，MemoryStorage 管数据容器，StorageService 管服务器入口和玩家接口。
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local MemoryStorage = require(ReplicatedStorage.Framework.Shared.Storage.MemoryStorage)
 local StorageConfig = require(ReplicatedStorage.Module.Shared.Config.StorageConfig)
+local ProfileStoreStorage = require(script.Parent.Parent.Storage.ProfileStoreStorage)
 
 local StorageService = {
-	Name = "StorageService", --被 ServiceRegistry 使用
+	Name = "StorageService",
 }
 
 StorageService._logger = nil
-StorageService._storage = nil --后面Init(context)时会保存真正的 MemoryStorage 对象
+StorageService._storage = nil
+StorageService._openingByKey = {}
+StorageService._cancelOpenByKey = {}
 
 local function getPlayerKey(player)
 	return tostring(player.UserId)
@@ -20,7 +22,7 @@ end
 
 local function assertModuleName(moduleName)
 	if type(moduleName) ~= "string" or moduleName == "" then
-		error("moduleName必须是非空字符串", 3)
+		error("moduleName must be a non-empty string", 3)
 	end
 	return moduleName
 end
@@ -37,50 +39,78 @@ local function deepCopy(value)
 	return copy
 end
 
+local function createStorageBackend()
+	if StorageConfig.Backend == "Memory" then
+		return MemoryStorage.new(StorageConfig.DefaultData, StorageConfig.Validate)
+	end
+
+	if StorageConfig.Backend == "ProfileStore" then
+		return ProfileStoreStorage.new(
+			StorageConfig.ProfileStoreName,
+			StorageConfig.DefaultData,
+			StorageConfig.Validate
+		)
+	end
+
+	error("Unsupported storage backend: " .. tostring(StorageConfig.Backend), 2)
+end
+
 function StorageService:Init(context)
 	self._logger = context.Logger
-	-- self._services = context.Services
-	--StorageService._storage 指向 MemoryStorage.new() 返回的 MemoryStorage 实例表。
-	self._storage = MemoryStorage.new(StorageConfig.DefaultData, StorageConfig.Validate)
-	--[[
-		StorageService._storage = {
-		_defaultData = {
-			SchemaVersion = 1,
-		},
-		_validate = StorageConfig.Validate,
-		_dataByKey = {},
-		}
-	]]
+	self._storage = createStorageBackend()
+	self._openingByKey = {}
+	self._cancelOpenByKey = {}
+end
+
+function StorageService:_openPlayerSafely(player)
+	local ok, data, openError = pcall(self.OpenPlayer, self, player)
+
+	if not ok then
+		self._logger.Warn(self.Name, "Player data load crashed: " .. player.Name .. " / " .. tostring(data))
+	elseif data ~= nil then
+		return
+	else
+		self._logger.Warn(self.Name, "Player data load failed: " .. player.Name .. " / " .. tostring(openError))
+	end
+
+	if player.Parent == Players then
+		player:Kick("Player data could not be loaded. Please rejoin.")
+	end
 end
 
 function StorageService:Start()
 	Players.PlayerAdded:Connect(function(player)
-		self:OpenPlayer(player)
+		task.spawn(function()
+			self:_openPlayerSafely(player)
+		end)
 	end)
 
 	Players.PlayerRemoving:Connect(function(player)
 		self:ClosePlayer(player)
 	end)
 
-	--返回一个数组表，里面是当前所有在线玩家的对象。
 	for _, player in ipairs(Players:GetPlayers()) do
-		self:OpenPlayer(player)
+		task.spawn(function()
+			self:_openPlayerSafely(player)
+		end)
 	end
 
-	self._logger.Info(self.Name, "存储服务已启动")
+	self._logger.Info(self.Name, "Storage service started with backend: " .. StorageConfig.Backend)
 end
 
---拿到内部 MemoryStorage 对象，如果还没初始化，就报错。
 function StorageService:_getStorage()
 	if self._storage == nil then
-		error("StorageService没有初始化", 2)
+		error("StorageService is not initialized", 2)
 	end
 	return self._storage
 end
 
---打开一个键，如果不存在就创建默认数据的副本，并返回它。
-function StorageService:OpenKey(key)
-	return self:_getStorage():Open(key) --return storage:Open(key)
+function StorageService:IsKeyOpen(key)
+	return self:_getStorage():IsOpen(key)
+end
+
+function StorageService:OpenKey(key, options)
+	return self:_getStorage():Open(key, options)
 end
 
 function StorageService:GetKey(key)
@@ -95,25 +125,74 @@ function StorageService:UpdateKey(key, updateFn)
 	return self:_getStorage():Update(key, updateFn)
 end
 
-function StorageService:RemoveKey(key)
-	self:_getStorage():Remove(key)
+function StorageService:CloseKey(key)
+	self:_getStorage():Close(key)
 end
 
---打开某个玩家的数据。
 function StorageService:OpenPlayer(player)
-	local data = self:OpenKey(getPlayerKey(player))
-	self._logger.Debug(self.Name, "已打开玩家数据： " .. player.Name)
+	local key = getPlayerKey(player)
+
+	if self:IsKeyOpen(key) then
+		return self:GetKey(key)
+	end
+
+	if self._openingByKey[key] then
+		return nil, "PLAYER_DATA_ALREADY_LOADING"
+	end
+
+	self._openingByKey[key] = true
+	self._cancelOpenByKey[key] = nil
+
+	local ok, data, openError = pcall(self.OpenKey, self, key, {
+		UserId = player.UserId,
+		Cancel = function()
+			return self._cancelOpenByKey[key] == true or player.Parent ~= Players
+		end,
+		OnSessionEnd = function(wasClosed)
+			if not wasClosed then
+				self._logger.Warn(self.Name, "Player data session ended unexpectedly: " .. player.Name)
+				if player.Parent == Players then
+					player:Kick("Player data session ended. Please rejoin.")
+				end
+			end
+		end,
+	})
+
+	self._openingByKey[key] = nil
+	self._cancelOpenByKey[key] = nil
+
+	if not ok then
+		error(data, 2)
+	end
+
+	if data == nil then
+		return nil, openError
+	end
+
+	if player.Parent ~= Players then
+		self:CloseKey(key)
+		return nil, "PLAYER_LEFT_DURING_LOAD"
+	end
+
+	self._logger.Debug(self.Name, "Player data opened: " .. player.Name)
 	return data
 end
 
+function StorageService:IsPlayerDataReady(player)
+	return self:IsKeyOpen(getPlayerKey(player))
+end
+
 function StorageService:ClosePlayer(player)
-	self:RemoveKey(getPlayerKey(player))
-	self._logger.Debug(self.Name, "已关闭玩家数据： " .. player.Name)
+	local key = getPlayerKey(player)
+	self._cancelOpenByKey[key] = true
+
+	if self:IsKeyOpen(key) then
+		self:CloseKey(key)
+		self._logger.Debug(self.Name, "Player data closed: " .. player.Name)
+	end
 end
 
 function StorageService:GetPlayerData(player)
-	--玩家数据用 UserId 当 key，非玩家数据可以用自定义字符串 key。
-	--当前基础框架为了学习和简单，把 Get 也做成“没有就创建”。
 	return self:GetKey(getPlayerKey(player))
 end
 
@@ -127,20 +206,19 @@ end
 
 function StorageService:GetPlayerModuleData(player, moduleName)
 	moduleName = assertModuleName(moduleName)
-
 	local data = self:GetPlayerData(player)
-	return data.Modules[moduleName]
+	return deepCopy(data.Modules[moduleName])
 end
 
 function StorageService:UpdatePlayerModuleData(player, moduleName, defaultModuleData, updateFn)
 	moduleName = assertModuleName(moduleName)
 
 	if defaultModuleData ~= nil and type(defaultModuleData) ~= "table" then
-		error("defaultModuleData必须是table类型或nil", 2)
+		error("defaultModuleData must be a table or nil", 2)
 	end
 
 	if type(updateFn) ~= "function" then
-		error("updateFn必须是function类型", 2)
+		error("updateFn must be a function", 2)
 	end
 
 	local updatedData = self:UpdatePlayerData(player, function(data)
@@ -158,7 +236,7 @@ function StorageService:UpdatePlayerModuleData(player, moduleName, defaultModule
 		return data
 	end)
 
-	return updatedData.Modules[moduleName]
+	return deepCopy(updatedData.Modules[moduleName])
 end
 
 return StorageService

@@ -4,7 +4,7 @@
 
 YanzoFrame_V1_StorageModule 从 YanzoFrame_V0 复制而来，用于把 Storage 从“基础边界”逐步发展成独立模块。
 
-当前阶段仍保留 V0 的最小内存存储边界，用来先验证接口、启动流程和调用方式。
+当前阶段是 `StorageModule V1.1`：保留内存测试后端，并增加 ProfileStore 持久化后端。
 
 ## 为什么基础框架要保留 Storage
 
@@ -17,52 +17,55 @@ YanzoFrame_V1_StorageModule 从 YanzoFrame_V0 复制而来，用于把 Storage �
 - 有统一入口。
 - 有默认数据。
 - 有数据校验。
-- 有内存实现。
+- 有测试与正式两种后端实现。
 - 可以让模块先跑通逻辑。
 
-## 为什么现在不做完整版
+## V1.1 范围
 
-完整版存储会引入：
+V1.1 已引入：
 
-- DataStore
-- ProfileStore
-- 失败重试
-- 请求频率限制
-- 关服保存
+- Wally 锁定的 ProfileStore。
+- 玩家档案会话锁、自动保存和会话释放。
+- 数据未就绪与加载失败处理。
+
+当前仍延后：
+
+- 自制原生 DataStore 适配器。
 - 数据迁移
 - 批量维护
 - 线上数据修复
 
-这些以后都重要，但现在会干扰基础框架学习。
-
 ## 当前保留的接口
 
-MemoryStorage 提供：
+MemoryStorage 和 ProfileStoreStorage 共同提供：
 
 | 方法 | 作用 |
 |---|---|
 | `Open(key)` | 打开一份数据，没有就创建默认数据 |
+| `IsOpen(key)` | 判断数据是否已经打开 |
 | `Get(key)` | 读取数据副本 |
 | `Set(key, data)` | 替换数据 |
 | `Update(key, fn)` | 基于旧数据修改 |
-| `Remove(key)` | 从内存移除数据 |
+| `Close(key)` | 保存并释放当前会话；Memory 后端只释放内存数据 |
 
 StorageService 提供：
 
 | 方法 | 作用 |
 |---|---|
 | `OpenKey(key)` | 打开通用 key 数据 |
+| `IsKeyOpen(key)` | 判断通用 key 是否已经打开 |
 | `GetKey(key)` | 读取通用 key 数据 |
 | `SetKey(key, data)` | 写入通用 key 数据 |
 | `UpdateKey(key, fn)` | 修改通用 key 数据 |
-| `RemoveKey(key)` | 移除通用 key 数据 |
+| `CloseKey(key)` | 关闭通用 key 会话 |
 | `OpenPlayer(player)` | 打开玩家数据 |
 | `GetPlayerData(player)` | 读取玩家数据 |
 | `SetPlayerData(player, data)` | 写入玩家数据 |
 | `UpdatePlayerData(player, fn)` | 修改玩家数据 |
 | `GetPlayerModuleData(player, moduleName)` | 读取某个模块的数据 |
 | `UpdatePlayerModuleData(player, moduleName, defaultModuleData, fn)` | 修改某个模块的数据 |
-| `ClosePlayer(player)` | 移除玩家内存数据 |
+| `IsPlayerDataReady(player)` | 判断玩家档案是否已经打开 |
+| `ClosePlayer(player)` | 保存并释放玩家档案会话 |
 
 ## 当前默认数据
 
@@ -99,15 +102,7 @@ StorageService 提供：
 
 ## 后续升级路径
 
-基础框架掌握之后，第一个正式模块可以做完整 StorageModule。
-
-升级顺序建议：
-
-1. 保持 MemoryStorage。
-2. 补充更严格的数据 schema。
-3. 增加 DataStoreStorage。
-4. 再讨论是否使用 ProfileStore。
-5. 最后才做迁移、批量维护、JSON / Excel 工具。
+V1.1 完成 Studio 跨重进持久化验收后冻结。未来只有真实 Schema 升级需求出现时才增加迁移，不预先加入批量维护或 JSON / Excel 工具。
 
 ## 当前真实消费者
 

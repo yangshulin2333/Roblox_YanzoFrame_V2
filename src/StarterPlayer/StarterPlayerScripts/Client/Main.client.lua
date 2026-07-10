@@ -15,10 +15,3 @@ local ControllerRegistry = require(script.Parent.Framework.Runtime.ControllerReg
 local registry = ControllerRegistry.new()
 registry:Init()
 registry:Start()
-
---[[
-    registry 是 ControllerRegistry 实例表。
-    StartupSmokeTestController 是一个 controller 表。
-    registry._context 是 registry 这张表里的一个字段。
-    StartupSmokeTestController 没有 _context。
-]]

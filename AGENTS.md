@@ -30,26 +30,28 @@
 
 ## Storage 边界
 
-当前复制件先保留 V0 的最小 Storage 边界，再按阶段扩展。
+当前复制件已进入 `StorageModule V1.1` 持久化阶段。
 
 当前已存在：
 
 - `MemoryStorage`
+- `ProfileStoreStorage`
 - `StorageService`
 - `StorageConfig`
-- `Open / Get / Set / Update / Remove`
+- `Open / IsOpen / Get / Set / Update / Close`
 - 默认数据校验
+- 玩家数据加载失败和会话结束处理
 
-身份对齐阶段禁止加入：
+当前阶段不加入：
 
-- DataStore
-- ProfileStore
+- 自制原生 DataStore 适配器
 - 数据迁移
 - 批量维护
 - JSON / Excel 导入导出
 - 业务字段，例如 Coins、Items、Shop、Inventory
 
-后续进入 StorageModule 设计时，必须先讨论接口、Schema、失败处理、DataStore/ProfileStore 是否引入，再写代码。
+业务服务只能依赖 `StorageService`，不能直接依赖 `MemoryStorage`、`ProfileStoreStorage` 或 `ProfileStore`。
+`Get` 只能读取已经打开的数据；只有 `Open` 可以加载或创建默认数据。`Close` 表示保存并释放会话，不表示删除永久数据。
 
 ## UI / Studio 边界
 
@@ -75,6 +77,7 @@
 修改代码后至少运行：
 
 ```powershell
+wally install
 stylua --check src
 selene src
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1

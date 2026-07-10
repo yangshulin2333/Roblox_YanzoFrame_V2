@@ -1,0 +1,9 @@
+[package]
+name = "yangshulin2333/yanzoframe-v1-storage-module"
+description = "Reusable Roblox player storage module"
+version = "1.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "server"
+
+[server-dependencies]
+ProfileStore = "lm-loleris/profilestore@1.0.3"
