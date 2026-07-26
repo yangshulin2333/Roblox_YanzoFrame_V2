@@ -9,6 +9,9 @@
       },
       "Module": {
         "$path": "src/ReplicatedStorage/Module"
+      },
+      "Resources": {
+        "$path": "src/ReplicatedStorage/Resources"
       }
     },
     "ServerScriptService": {
@@ -21,6 +24,12 @@
       },
       "Server": {
         "$path": "src/ServerScriptService/Server"
+      }
+    },
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "Resources": {
+        "$path": "src/ServerStorage/Resources"
       }
     },
     "StarterPlayer": {

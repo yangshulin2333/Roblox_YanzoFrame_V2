@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local MemoryStorage = require(ReplicatedStorage.Framework.Shared.Storage.MemoryStorage)
+local TableUtil = require(ReplicatedStorage.Framework.Shared.Util.TableUtil)
 local StorageConfig = require(ReplicatedStorage.Module.Shared.Config.StorageConfig)
 local ProfileStoreStorage = require(script.Parent.Parent.Storage.ProfileStoreStorage)
 
@@ -15,9 +16,34 @@ StorageService._logger = nil
 StorageService._storage = nil
 StorageService._openingByKey = {}
 StorageService._cancelOpenByKey = {}
+StorageService._playerDataStatusByKey = {}
+
+local PLAYER_DATA_STATUS_LOADING = "LOADING"
+local PLAYER_DATA_STATUS_READY = "READY"
+local PLAYER_DATA_STATUS_LOAD_FAILED = "LOAD_FAILED"
+local PLAYER_DATA_STATUS_SESSION_ENDED = "SESSION_ENDED"
 
 local function getPlayerKey(player)
 	return tostring(player.UserId)
+end
+
+-- 校验可选的等待超时秒数，nil 表示持续等待直到出现确定结果。
+local function assertOptionalTimeout(timeoutSeconds)
+	if timeoutSeconds == nil then
+		return nil
+	end
+
+	if
+		type(timeoutSeconds) ~= "number"
+		or timeoutSeconds ~= timeoutSeconds
+		or timeoutSeconds == math.huge
+		or timeoutSeconds == -math.huge
+		or timeoutSeconds < 0
+	then
+		error("timeoutSeconds 必须是大于或等于 0 的有限数字或 nil", 3)
+	end
+
+	return timeoutSeconds
 end
 
 local function assertModuleName(moduleName)
@@ -25,18 +51,6 @@ local function assertModuleName(moduleName)
 		error("moduleName must be a non-empty string", 3)
 	end
 	return moduleName
-end
-
-local function deepCopy(value)
-	if type(value) ~= "table" then
-		return value
-	end
-
-	local copy = {}
-	for key, item in pairs(value) do
-		copy[deepCopy(key)] = deepCopy(item)
-	end
-	return copy
 end
 
 local function createStorageBackend()
@@ -60,16 +74,24 @@ function StorageService:Init(context)
 	self._storage = createStorageBackend()
 	self._openingByKey = {}
 	self._cancelOpenByKey = {}
+	self._playerDataStatusByKey = {}
 end
 
 function StorageService:_openPlayerSafely(player)
+	local key = getPlayerKey(player)
 	local ok, data, openError = pcall(self.OpenPlayer, self, player)
 
 	if not ok then
+		if player.Parent == Players then
+			self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_LOAD_FAILED
+		end
 		self._logger.Warn(self.Name, "Player data load crashed: " .. player.Name .. " / " .. tostring(data))
 	elseif data ~= nil then
 		return
 	else
+		if player.Parent == Players then
+			self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_LOAD_FAILED
+		end
 		self._logger.Warn(self.Name, "Player data load failed: " .. player.Name .. " / " .. tostring(openError))
 	end
 
@@ -132,16 +154,23 @@ end
 function StorageService:OpenPlayer(player)
 	local key = getPlayerKey(player)
 
+	if player.Parent ~= Players then
+		return nil, "PLAYER_LEFT"
+	end
+
 	if self:IsKeyOpen(key) then
+		self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_READY
 		return self:GetKey(key)
 	end
 
 	if self._openingByKey[key] then
+		self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_LOADING
 		return nil, "PLAYER_DATA_ALREADY_LOADING"
 	end
 
 	self._openingByKey[key] = true
 	self._cancelOpenByKey[key] = nil
+	self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_LOADING
 
 	local ok, data, openError = pcall(self.OpenKey, self, key, {
 		UserId = player.UserId,
@@ -150,6 +179,9 @@ function StorageService:OpenPlayer(player)
 		end,
 		OnSessionEnd = function(wasClosed)
 			if not wasClosed then
+				if player.Parent == Players then
+					self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_SESSION_ENDED
+				end
 				self._logger.Warn(self.Name, "Player data session ended unexpectedly: " .. player.Name)
 				if player.Parent == Players then
 					player:Kick("Player data session ended. Please rejoin.")
@@ -162,10 +194,16 @@ function StorageService:OpenPlayer(player)
 	self._cancelOpenByKey[key] = nil
 
 	if not ok then
+		if player.Parent == Players then
+			self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_LOAD_FAILED
+		end
 		error(data, 2)
 	end
 
 	if data == nil then
+		if player.Parent == Players then
+			self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_LOAD_FAILED
+		end
 		return nil, openError
 	end
 
@@ -174,12 +212,48 @@ function StorageService:OpenPlayer(player)
 		return nil, "PLAYER_LEFT_DURING_LOAD"
 	end
 
+	self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_READY
 	self._logger.Debug(self.Name, "Player data opened: " .. player.Name)
 	return data
 end
 
 function StorageService:IsPlayerDataReady(player)
 	return self:IsKeyOpen(getPlayerKey(player))
+end
+
+-- 等待指定玩家的数据就绪，并把离开、加载失败、会话中断和超时统一为结果码。
+function StorageService:WaitForPlayerData(player, timeoutSeconds)
+	timeoutSeconds = assertOptionalTimeout(timeoutSeconds)
+
+	local key = getPlayerKey(player)
+	local deadline = nil
+	if timeoutSeconds ~= nil then
+		deadline = os.clock() + timeoutSeconds
+	end
+
+	while player.Parent == Players do
+		if self:IsKeyOpen(key) then
+			self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_READY
+			return true, PLAYER_DATA_STATUS_READY
+		end
+
+		local status = self._playerDataStatusByKey[key]
+		if status == PLAYER_DATA_STATUS_LOAD_FAILED then
+			return false, "DATA_LOAD_FAILED"
+		end
+
+		if status == PLAYER_DATA_STATUS_SESSION_ENDED then
+			return false, "DATA_SESSION_ENDED"
+		end
+
+		if deadline ~= nil and os.clock() >= deadline then
+			return false, "DATA_READY_TIMEOUT"
+		end
+
+		task.wait(StorageConfig.PlayerDataReadyPollSeconds)
+	end
+
+	return false, "PLAYER_LEFT"
 end
 
 function StorageService:ClosePlayer(player)
@@ -190,6 +264,8 @@ function StorageService:ClosePlayer(player)
 		self:CloseKey(key)
 		self._logger.Debug(self.Name, "Player data closed: " .. player.Name)
 	end
+
+	self._playerDataStatusByKey[key] = nil
 end
 
 function StorageService:GetPlayerData(player)
@@ -200,6 +276,22 @@ function StorageService:SetPlayerData(player, data)
 	return self:SetKey(getPlayerKey(player), data)
 end
 
+-- 将指定已打开玩家的整份存档恢复为当前默认结构。
+function StorageService:ResetPlayerData(player)
+	if not self:IsPlayerDataReady(player) then
+		return false, "DATA_NOT_READY"
+	end
+
+	local defaultData = TableUtil.DeepCopy(StorageConfig.DefaultData)
+	local ok, dataOrError = pcall(self.SetPlayerData, self, player, defaultData)
+	if not ok then
+		self._logger.Warn(self.Name, "初始化玩家存档失败: " .. player.Name .. " / " .. tostring(dataOrError))
+		return false, "DATA_RESET_FAILED"
+	end
+
+	return true, dataOrError
+end
+
 function StorageService:UpdatePlayerData(player, updateFn)
 	return self:UpdateKey(getPlayerKey(player), updateFn)
 end
@@ -207,7 +299,7 @@ end
 function StorageService:GetPlayerModuleData(player, moduleName)
 	moduleName = assertModuleName(moduleName)
 	local data = self:GetPlayerData(player)
-	return deepCopy(data.Modules[moduleName])
+	return TableUtil.DeepCopy(data.Modules[moduleName])
 end
 
 function StorageService:UpdatePlayerModuleData(player, moduleName, defaultModuleData, updateFn)
@@ -224,7 +316,7 @@ function StorageService:UpdatePlayerModuleData(player, moduleName, defaultModule
 	local updatedData = self:UpdatePlayerData(player, function(data)
 		local moduleData = data.Modules[moduleName]
 		if moduleData == nil then
-			moduleData = deepCopy(defaultModuleData or {})
+			moduleData = TableUtil.DeepCopy(defaultModuleData or {})
 			data.Modules[moduleName] = moduleData
 		end
 
@@ -236,7 +328,7 @@ function StorageService:UpdatePlayerModuleData(player, moduleName, defaultModule
 		return data
 	end)
 
-	return deepCopy(updatedData.Modules[moduleName])
+	return TableUtil.DeepCopy(updatedData.Modules[moduleName])
 end
 
 return StorageService

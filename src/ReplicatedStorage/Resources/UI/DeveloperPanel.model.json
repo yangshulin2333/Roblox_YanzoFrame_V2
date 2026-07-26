@@ -1,0 +1,338 @@
+{
+  "ClassName": "ScreenGui",
+  "Properties": {
+    "Enabled": false,
+    "ResetOnSpawn": false,
+    "IgnoreGuiInset": false,
+    "DisplayOrder": 1000,
+    "ZIndexBehavior": "Sibling"
+  },
+  "Children": [
+    {
+      "Name": "Panel",
+      "ClassName": "Frame",
+      "Properties": {
+        "AnchorPoint": [1, 0],
+        "Position": { "UDim2": [[0.98, 0], [0.08, 0]] },
+        "Size": { "UDim2": [[0.25, 0], [0.38, 0]] },
+        "BackgroundColor3": [0.1176470588, 0.1607843137, 0.231372549],
+        "BorderSizePixel": 0
+      },
+      "Children": [
+        {
+          "Name": "UICorner",
+          "ClassName": "UICorner",
+          "Properties": {
+            "CornerRadius": { "UDim": [0, 12] }
+          }
+        },
+        {
+          "Name": "UIStroke",
+          "ClassName": "UIStroke",
+          "Properties": {
+            "Color": [0.3098039216, 0.5058823529, 0.7411764706],
+            "Transparency": 0.2,
+            "Thickness": 1
+          }
+        },
+        {
+          "Name": "UISizeConstraint",
+          "ClassName": "UISizeConstraint",
+          "Properties": {
+            "MinSize": [280, 260],
+            "MaxSize": [420, 420]
+          }
+        },
+        {
+          "Name": "TitleLabel",
+          "ClassName": "TextLabel",
+          "Properties": {
+            "Position": { "UDim2": [[0.06, 0], [0.06, 0]] },
+            "Size": { "UDim2": [[0.72, 0], [0.1, 0]] },
+            "BackgroundTransparency": 1,
+            "Text": "开发调试",
+            "TextColor3": [1, 1, 1],
+            "TextScaled": true,
+            "Font": "GothamBold",
+            "TextXAlignment": "Left",
+            "TextYAlignment": "Center"
+          },
+          "Children": [
+            {
+              "Name": "UITextSizeConstraint",
+              "ClassName": "UITextSizeConstraint",
+              "Properties": {
+                "MinTextSize": 16,
+                "MaxTextSize": 24
+              }
+            }
+          ]
+        },
+        {
+          "Name": "DescriptionLabel",
+          "ClassName": "TextLabel",
+          "Properties": {
+            "Position": { "UDim2": [[0.06, 0], [0.17, 0]] },
+            "Size": { "UDim2": [[0.88, 0], [0.11, 0]] },
+            "BackgroundTransparency": 1,
+            "Text": "仅 Studio Play 可用；初始化后会重新进入。",
+            "TextColor3": [0.5803921569, 0.6392156863, 0.7215686275],
+            "TextScaled": true,
+            "Font": "Gotham",
+            "TextWrapped": true,
+            "TextXAlignment": "Left",
+            "TextYAlignment": "Center"
+          },
+          "Children": [
+            {
+              "Name": "UITextSizeConstraint",
+              "ClassName": "UITextSizeConstraint",
+              "Properties": {
+                "MinTextSize": 12,
+                "MaxTextSize": 18
+              }
+            }
+          ]
+        },
+        {
+          "Name": "ResetButton",
+          "ClassName": "TextButton",
+          "Properties": {
+            "Position": { "UDim2": [[0.06, 0], [0.33, 0]] },
+            "Size": { "UDim2": [[0.88, 0], [0.14, 0]] },
+            "BackgroundColor3": [0.862745098, 0.2078431373, 0.2705882353],
+            "BorderSizePixel": 0,
+            "Text": "初始化全部数据",
+            "TextColor3": [1, 1, 1],
+            "TextScaled": true,
+            "Font": "GothamBold"
+          },
+          "Children": [
+            {
+              "Name": "UICorner",
+              "ClassName": "UICorner",
+              "Properties": {
+                "CornerRadius": { "UDim": [0, 8] }
+              }
+            },
+            {
+              "Name": "UITextSizeConstraint",
+              "ClassName": "UITextSizeConstraint",
+              "Properties": {
+                "MinTextSize": 14,
+                "MaxTextSize": 22
+              }
+            }
+          ]
+        },
+        {
+          "Name": "ConfirmFrame",
+          "ClassName": "Frame",
+          "Properties": {
+            "Visible": false,
+            "Position": { "UDim2": [[0.06, 0], [0.52, 0]] },
+            "Size": { "UDim2": [[0.88, 0], [0.28, 0]] },
+            "BackgroundColor3": [0.0588235294, 0.0901960784, 0.1450980392],
+            "BorderSizePixel": 0
+          },
+          "Children": [
+            {
+              "Name": "UICorner",
+              "ClassName": "UICorner",
+              "Properties": {
+                "CornerRadius": { "UDim": [0, 8] }
+              }
+            },
+            {
+              "Name": "ConfirmLabel",
+              "ClassName": "TextLabel",
+              "Properties": {
+                "Position": { "UDim2": [[0.06, 0], [0.08, 0]] },
+                "Size": { "UDim2": [[0.88, 0], [0.38, 0]] },
+                "BackgroundTransparency": 1,
+                "Text": "确定初始化当前角色的全部数据？",
+                "TextColor3": [1, 1, 1],
+                "TextScaled": true,
+                "Font": "GothamBold",
+                "TextWrapped": true,
+                "TextXAlignment": "Left"
+              },
+              "Children": [
+                {
+                  "Name": "UITextSizeConstraint",
+                  "ClassName": "UITextSizeConstraint",
+                  "Properties": {
+                    "MinTextSize": 12,
+                    "MaxTextSize": 18
+                  }
+                }
+              ]
+            },
+            {
+              "Name": "ConfirmButton",
+              "ClassName": "TextButton",
+              "Properties": {
+                "Position": { "UDim2": [[0.06, 0], [0.57, 0]] },
+                "Size": { "UDim2": [[0.55, 0], [0.31, 0]] },
+                "BackgroundColor3": [0.862745098, 0.2078431373, 0.2705882353],
+                "BorderSizePixel": 0,
+                "Text": "确认初始化",
+                "TextColor3": [1, 1, 1],
+                "TextScaled": true,
+                "Font": "GothamBold"
+              },
+              "Children": [
+                {
+                  "Name": "UICorner",
+                  "ClassName": "UICorner",
+                  "Properties": {
+                    "CornerRadius": { "UDim": [0, 8] }
+                  }
+                },
+                {
+                  "Name": "UITextSizeConstraint",
+                  "ClassName": "UITextSizeConstraint",
+                  "Properties": {
+                    "MinTextSize": 12,
+                    "MaxTextSize": 18
+                  }
+                }
+              ]
+            },
+            {
+              "Name": "CancelButton",
+              "ClassName": "TextButton",
+              "Properties": {
+                "AnchorPoint": [1, 0],
+                "Position": { "UDim2": [[0.94, 0], [0.57, 0]] },
+                "Size": { "UDim2": [[0.28, 0], [0.31, 0]] },
+                "BackgroundColor3": [0.2784313725, 0.3333333333, 0.4117647059],
+                "BorderSizePixel": 0,
+                "Text": "取消",
+                "TextColor3": [1, 1, 1],
+                "TextScaled": true,
+                "Font": "GothamBold"
+              },
+              "Children": [
+                {
+                  "Name": "UICorner",
+                  "ClassName": "UICorner",
+                  "Properties": {
+                    "CornerRadius": { "UDim": [0, 8] }
+                  }
+                },
+                {
+                  "Name": "UITextSizeConstraint",
+                  "ClassName": "UITextSizeConstraint",
+                  "Properties": {
+                    "MinTextSize": 12,
+                    "MaxTextSize": 18
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Name": "FeedbackLabel",
+          "ClassName": "TextLabel",
+          "Properties": {
+            "Position": { "UDim2": [[0.06, 0], [0.85, 0]] },
+            "Size": { "UDim2": [[0.88, 0], [0.09, 0]] },
+            "BackgroundTransparency": 1,
+            "Text": "仅 Studio 开发期可用。",
+            "TextColor3": [0.5803921569, 0.6392156863, 0.7215686275],
+            "TextScaled": true,
+            "Font": "Gotham",
+            "TextXAlignment": "Left",
+            "TextYAlignment": "Center"
+          },
+          "Children": [
+            {
+              "Name": "UITextSizeConstraint",
+              "ClassName": "UITextSizeConstraint",
+              "Properties": {
+                "MinTextSize": 12,
+                "MaxTextSize": 18
+              }
+            }
+          ]
+        },
+        {
+          "Name": "CollapseButton",
+          "ClassName": "TextButton",
+          "Properties": {
+            "AnchorPoint": [1, 0],
+            "Position": { "UDim2": [[0.94, 0], [0.05, 0]] },
+            "Size": { "UDim2": [[0.11, 0], [0.12, 0]] },
+            "BackgroundColor3": [0.2784313725, 0.3333333333, 0.4117647059],
+            "BorderSizePixel": 0,
+            "Text": "−",
+            "TextColor3": [1, 1, 1],
+            "TextScaled": true,
+            "Font": "GothamBold"
+          },
+          "Children": [
+            {
+              "Name": "UICorner",
+              "ClassName": "UICorner",
+              "Properties": {
+                "CornerRadius": { "UDim": [0, 8] }
+              }
+            },
+            {
+              "Name": "UITextSizeConstraint",
+              "ClassName": "UITextSizeConstraint",
+              "Properties": {
+                "MinTextSize": 16,
+                "MaxTextSize": 26
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "ToggleButton",
+      "ClassName": "TextButton",
+      "Properties": {
+        "Visible": false,
+        "AnchorPoint": [1, 0],
+        "Position": { "UDim2": [[0.98, 0], [0.08, 0]] },
+        "Size": { "UDim2": [[0.052, 0], [0.07, 0]] },
+        "BackgroundColor3": [0.1176470588, 0.1607843137, 0.231372549],
+        "BorderSizePixel": 0,
+        "Text": "调",
+        "TextColor3": [1, 1, 1],
+        "TextScaled": true,
+        "Font": "GothamBold"
+      },
+      "Children": [
+        {
+          "Name": "UICorner",
+          "ClassName": "UICorner",
+          "Properties": {
+            "CornerRadius": { "UDim": [0, 12] }
+          }
+        },
+        {
+          "Name": "UIStroke",
+          "ClassName": "UIStroke",
+          "Properties": {
+            "Color": [0.3098039216, 0.5058823529, 0.7411764706],
+            "Transparency": 0.2,
+            "Thickness": 1
+          }
+        },
+        {
+          "Name": "UITextSizeConstraint",
+          "ClassName": "UITextSizeConstraint",
+          "Properties": {
+            "MinTextSize": 15,
+            "MaxTextSize": 24
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,7 @@
 --!strict
 
-return {}
+local Controllers = script.Parent.Parent.Controllers
+
+return {
+	require(Controllers.DeveloperPanelController),
+}

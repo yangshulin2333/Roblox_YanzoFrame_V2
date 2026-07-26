@@ -77,10 +77,12 @@
 修改代码后至少运行：
 
 ```powershell
-wally install
-stylua --check src
-selene src
+& "$env:USERPROFILE\.rokit\bin\wally.exe" install
+& "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src
+& "$env:USERPROFILE\.rokit\bin\selene.exe" src
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ```
+
+不得依赖 Windows PATH 中的同名裸命令。项目工具版本以 `rokit.toml` 为准；新机器先在项目根目录执行 `rokit install`。
 
 涉及 Roblox Studio 的内容，还需要 Studio 手动确认。

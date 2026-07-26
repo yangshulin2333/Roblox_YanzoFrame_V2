@@ -21,8 +21,14 @@ local scopeLevels = LogConfig.ScopeLevels or {}
 	scope   日志来源，比如 ServiceRegistry / NetService
 	message 具体日志内容
 ]]
-local function formatMessage(level, scope, message)
-	return string.format("[YanzoFrame_V1_StorageModule][%s][%s] %s", level, scope, message)
+-- 统一拼接日志文本；调用来源存在时附带脚本与行号，方便从 Output 反查业务调用点。
+local function formatMessage(level, scope, message, source, line)
+	local callerSuffix = ""
+	if type(source) == "string" and type(line) == "number" then
+		callerSuffix = string.format(" [%s:%d]", source, line)
+	end
+
+	return string.format("[YanzoFrame_V1_StorageModule][%s][%s] %s%s", level, scope, message, callerSuffix)
 end
 
 local function getLevelValue(level)
@@ -78,7 +84,9 @@ function Logger.Debug(scope, message)
 		return
 	end
 
-	print(formatMessage("Debug", scope, message))
+	-- 第 2 层是调用 Logger.Debug 的业务代码；第 1 层仍会指向 Logger 自己。
+	local source, line = debug.info(2, "sl")
+	print(formatMessage("Debug", scope, message, source, line))
 end
 
 function Logger.Info(scope, message)
@@ -86,7 +94,9 @@ function Logger.Info(scope, message)
 		return
 	end
 
-	print(formatMessage("Info", scope, message))
+	-- 第 2 层是调用 Logger.Info 的业务代码；第 1 层仍会指向 Logger 自己。
+	local source, line = debug.info(2, "sl")
+	print(formatMessage("Info", scope, message, source, line))
 end
 
 function Logger.Warn(scope, message)
@@ -94,7 +104,9 @@ function Logger.Warn(scope, message)
 		return
 	end
 
-	warn(formatMessage("Warn", scope, message))
+	-- 第 2 层是调用 Logger.Warn 的业务代码；第 1 层仍会指向 Logger 自己。
+	local source, line = debug.info(2, "sl")
+	warn(formatMessage("Warn", scope, message, source, line))
 end
 
 --抛出错误，中断当前执行线程 / 当前调用流程。 Logger.Error 用的是 error()

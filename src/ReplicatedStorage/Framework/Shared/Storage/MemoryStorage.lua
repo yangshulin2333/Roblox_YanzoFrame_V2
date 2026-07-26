@@ -1,19 +1,9 @@
 --!strict
 
+local TableUtil = require(script.Parent.Parent.Util.TableUtil)
+
 local MemoryStorage = {}
 MemoryStorage.__index = MemoryStorage
-
-local function deepCopy(value)
-	if type(value) ~= "table" then
-		return value
-	end
-
-	local copy = {}
-	for key, item in pairs(value) do
-		copy[deepCopy(key)] = deepCopy(item)
-	end
-	return copy
-end
 
 function MemoryStorage.new(defaultData, validate)
 	if type(defaultData) ~= "table" then
@@ -25,7 +15,7 @@ function MemoryStorage.new(defaultData, validate)
 	end
 
 	local self = setmetatable({}, MemoryStorage)
-	self._defaultData = deepCopy(defaultData)
+	self._defaultData = TableUtil.DeepCopy(defaultData)
 	self._validate = validate
 	self._dataByKey = {}
 	self._updatingByKey = {}
@@ -51,7 +41,7 @@ function MemoryStorage:_validateData(data)
 end
 
 function MemoryStorage:_createDefault()
-	local data = deepCopy(self._defaultData)
+	local data = TableUtil.DeepCopy(self._defaultData)
 	self:_validateData(data)
 	return data
 end
@@ -79,7 +69,7 @@ function MemoryStorage:Get(key)
 		error("storage key is not open: " .. key, 2)
 	end
 
-	return deepCopy(data)
+	return TableUtil.DeepCopy(data)
 end
 
 function MemoryStorage:Set(key, data)
@@ -89,7 +79,7 @@ function MemoryStorage:Set(key, data)
 		error("storage key is not open: " .. key, 2)
 	end
 
-	local copy = deepCopy(data)
+	local copy = TableUtil.DeepCopy(data)
 	self:_validateData(copy)
 	self._dataByKey[key] = copy
 	return self:Get(key)

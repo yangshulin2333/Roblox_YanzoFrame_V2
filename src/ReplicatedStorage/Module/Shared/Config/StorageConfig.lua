@@ -5,6 +5,9 @@ local StorageConfig = {}
 StorageConfig.Backend = "ProfileStore"
 StorageConfig.ProfileStoreName = "YanzoFrame_PlayerData_V1"
 
+-- 等待玩家数据就绪时的轮询间隔（秒）。
+StorageConfig.PlayerDataReadyPollSeconds = 0.1
+
 --架构版本号
 StorageConfig.SchemaVersion = 1
 StorageConfig.DefaultLanguage = "zh-CN"

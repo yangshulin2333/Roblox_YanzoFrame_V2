@@ -33,6 +33,7 @@
   -> 根据 player.UserId 打开数据
   -> ProfileStore 加载档案；没有数据时使用 DefaultData 创建
   -> 打开成功后 IsPlayerDataReady(player) 才为 true
+  -> 需要等待的业务服务可调用 WaitForPlayerData(player, timeoutSeconds?)
 
 玩家在线
   -> 其他服务通过 StorageService 读取或更新数据
@@ -50,9 +51,11 @@
 |---|---|---|
 | `OpenPlayer(player)` | 打开玩家数据 | 玩家进入时由 `StorageService` 自动调用 |
 | `IsPlayerDataReady(player)` | 判断玩家档案是否已打开 | Remote 和业务操作前用于返回 `DATA_NOT_READY` |
+| `WaitForPlayerData(player, timeoutSeconds?)` | 等待指定玩家的数据准备完成 | 只用于确实需要在初始化后继续的服务；返回统一结果码，不要自行重复轮询 |
 | `GetPlayerData(player)` | 读取玩家数据副本 | 用于显示、判断、调试 |
 | `UpdatePlayerData(player, updateFn)` | 修改玩家数据 | 正常业务修改优先使用 |
 | `SetPlayerData(player, data)` | 替换整份玩家数据 | 少用，仅用于初始化、修复、迁移等明确场景 |
+| `ResetPlayerData(player)` | 恢复当前默认整档数据 | 仅服务器开发入口调用；成功后应让玩家重新进入以清理业务缓存 |
 | `GetPlayerModuleData(player, moduleName)` | 读取某个模块的数据副本 | 业务模块读取自己的命名空间数据 |
 | `UpdatePlayerModuleData(player, moduleName, defaultModuleData, updateFn)` | 修改某个模块的数据 | 业务模块写入自己的命名空间数据 |
 | `ClosePlayer(player)` | 关闭玩家数据 | 玩家离开时由 `StorageService` 自动调用 |
@@ -63,6 +66,22 @@
 业务模块只描述“我要怎么改数据”。
 StorageModule 负责读取、校验、写回。
 ```
+
+### 等待数据就绪的结果码
+
+`WaitForPlayerData(player, timeoutSeconds?)` 不修改数据，只等待本次玩家数据生命周期出现确定结果：
+
+| 返回值 | 含义 | 业务服务应如何处理 |
+|---|---|---|
+| `true, "READY"` | 数据已打开，可继续读取或写入 | 继续初始化 |
+| `false, "PLAYER_LEFT"` | 玩家已经离开 | 停止当前初始化，不再写入 |
+| `false, "DATA_LOAD_FAILED"` | 数据加载失败 | 停止初始化；玩家会由 StorageService 断开并提示重进 |
+| `false, "DATA_SESSION_ENDED"` | 已打开的数据会话意外结束 | 停止初始化；玩家会由 StorageService 断开并提示重进 |
+| `false, "DATA_READY_TIMEOUT"` | 调用方提供的超时时间已到 | 由具体业务决定重试、提示或放弃 |
+
+`timeoutSeconds` 省略时，会持续等待到上述某个确定结果；传入 `0` 时只做一次即时检查。
+
+`IsPlayerDataReady(player)` 仍保留给不应等待的即时操作，例如 Remote 请求直接返回 `DATA_NOT_READY`。不要为了统一而把所有即时操作都改为等待。
 
 后续业务模块不要直接操作 `data.Modules`。优先使用模块命名空间接口：
 

@@ -1,23 +1,13 @@
 --!strict
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local ProfileStore = require(ServerScriptService.ServerPackages.ProfileStore)
+local TableUtil = require(ReplicatedStorage.Framework.Shared.Util.TableUtil)
 
 local ProfileStoreStorage = {}
 ProfileStoreStorage.__index = ProfileStoreStorage
-
-local function deepCopy(value)
-	if type(value) ~= "table" then
-		return value
-	end
-
-	local copy = {}
-	for key, item in pairs(value) do
-		copy[deepCopy(key)] = deepCopy(item)
-	end
-	return copy
-end
 
 function ProfileStoreStorage.new(storeName, defaultData, validate)
 	if type(storeName) ~= "string" or storeName == "" then
@@ -33,7 +23,7 @@ function ProfileStoreStorage.new(storeName, defaultData, validate)
 	end
 
 	local self = setmetatable({}, ProfileStoreStorage)
-	self._store = ProfileStore.New(storeName, deepCopy(defaultData))
+	self._store = ProfileStore.New(storeName, TableUtil.DeepCopy(defaultData))
 	self._validate = validate
 	self._profilesByKey = {}
 	self._closingByKey = {}
@@ -123,12 +113,12 @@ end
 
 function ProfileStoreStorage:Get(key)
 	local profile = self:_getProfile(key)
-	return deepCopy(profile.Data)
+	return TableUtil.DeepCopy(profile.Data)
 end
 
 function ProfileStoreStorage:Set(key, data)
 	local profile = self:_getProfile(key)
-	local copy = deepCopy(data)
+	local copy = TableUtil.DeepCopy(data)
 	local isValid, validationError = self:_validateData(copy)
 
 	if not isValid then
