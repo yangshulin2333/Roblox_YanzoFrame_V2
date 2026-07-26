@@ -67,7 +67,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 src/ReplicatedStorage/Module/Shared/Config/LogConfig.lua
 ```
 
-当前默认是 `Warn`：正常启动只显示警告和错误，避免 Roblox Studio 输出窗口刷屏。
+当前 V2 基线默认是 `Debug`，便于开发期观察启动和数据链路；准备稳定试玩或发布时，可改回 `Warn`，避免 Roblox Studio 输出窗口刷屏。
 
 调试时可以临时改成：
 
@@ -141,4 +141,10 @@ StorageModule 使用规则见：
 
 ```text
 docs/StorageModule使用规则_StorageModuleUsage.md
+```
+
+V2 的日常接入与开发顺序见：
+
+```text
+docs/YanzoFrame_V2简明操作手册.md
 ```
