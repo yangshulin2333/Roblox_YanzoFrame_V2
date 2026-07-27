@@ -69,7 +69,7 @@ try {
         throw "Rokit Selene 静态检查失败"
     }
 
-    $buildPath = Join-Path ([System.IO.Path]::GetTempPath()) "YanzoFrame_V1_StorageModule_Base_Check.rbxlx"
+    $buildPath = Join-Path ([System.IO.Path]::GetTempPath()) "YanzoFrame_V2_Base_Check.rbxlx"
     & $Rojo build default.project.json --output $buildPath
     if ($LASTEXITCODE -ne 0) {
         throw "Rokit Rojo 构建失败"

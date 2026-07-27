@@ -28,7 +28,7 @@ local function formatMessage(level, scope, message, source, line)
 		callerSuffix = string.format(" [%s:%d]", source, line)
 	end
 
-	return string.format("[YanzoFrame_V1_StorageModule][%s][%s] %s%s", level, scope, message, callerSuffix)
+	return string.format("[YanzoFrame_V2][%s][%s] %s%s", level, scope, message, callerSuffix)
 end
 
 local function getLevelValue(level)

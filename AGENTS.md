@@ -1,6 +1,6 @@
-# YanzoFrame_V1_StorageModule Agent Rules
+# YanzoFrame_V2 Agent Rules
 
-本项目是 `D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule`，从 `YanzoFrame_V0` 复制而来，用于开发第一个正式 Roblox 可复用模块：`StorageModule`。
+本项目是 `D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2`，用于维护 YanzoFrame V2 的可复用 Roblox 框架能力。
 
 ## 固定目标
 

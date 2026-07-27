@@ -196,7 +196,7 @@ src/ReplicatedStorage/Resources/UI/
 ### 启动同步
 
 ```powershell
-cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
+cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2
 & "$env:USERPROFILE\.rokit\bin\rojo.exe" serve default.project.json --address 127.0.0.1 --port 34872
 ```
 
@@ -205,7 +205,7 @@ cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
 ### 修改后验证
 
 ```powershell
-cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
+cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2
 & "$env:USERPROFILE\.rokit\bin\wally.exe" install
 & "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src
 & "$env:USERPROFILE\.rokit\bin\selene.exe" src

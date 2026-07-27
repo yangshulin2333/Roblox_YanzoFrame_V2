@@ -88,7 +88,7 @@ function Save-And-Push {
 
 function Show-Help {
     Write-Host @"
-YanzoFrame_V1_StorageModule Git 简化脚本
+YanzoFrame_V2 Git 简化脚本
 
 常用命令：
   .\scripts\Git-Simple.ps1 setup

@@ -64,7 +64,7 @@
 你需要能独立运行：
 
 ```powershell
-cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
+cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2
 wally install
 stylua --check src
 selene src

@@ -2,7 +2,7 @@
 
 ## 当前定位
 
-YanzoFrame_V1_StorageModule 从 YanzoFrame_V0 复制而来，用于把 Storage 从“基础边界”逐步发展成独立模块。
+YanzoFrame_V2 从 YanzoFrame_V0 演进而来，用于把 Storage 从“基础边界”逐步发展成独立模块。
 
 当前阶段是 `StorageModule V1.1`：保留内存测试后端，并增加 ProfileStore 持久化后端。
 

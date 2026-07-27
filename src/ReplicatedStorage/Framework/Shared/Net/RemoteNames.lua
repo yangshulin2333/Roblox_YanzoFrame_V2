@@ -1,7 +1,7 @@
 --!strict
 
 local RemoteNames = {
-	RootFolder = "YanzoFrame_V1_StorageModule_Remotes",
+	RootFolder = "YanzoFrame_V2_Remotes",
 	ClientToServerFolder = "ClientToServer",
 	ServerToClientFolder = "ServerToClient",
 	RequestFolder = "Requests",

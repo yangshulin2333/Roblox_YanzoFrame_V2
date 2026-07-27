@@ -1,6 +1,6 @@
-# YanzoFrame_V1_StorageModule
+# YanzoFrame_V2
 
-> 当前发布基线：**YanzoFrame V2.0.0 – Framework Baseline**。仓库与本地目录继续保留历史名称，避免影响既有 Rojo 映射和 Studio 工程路径。
+> 当前发布基线：**YanzoFrame V2.0.0 — Framework Baseline**。仓库、本地目录和 Rojo 项目名均已统一为 `YanzoFrame_V2`。
 
 这是从 `YanzoFrame_V0` 复制出来的第一个正式 Roblox 可复用模块工程，用于学习和开发 `StorageModule`。
 
@@ -48,12 +48,12 @@
 ## 常用命令
 
 ```powershell
-cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V1_StorageModule
+cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2
 rokit install
 & "$env:USERPROFILE\.rokit\bin\wally.exe" install
 & "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src
 & "$env:USERPROFILE\.rokit\bin\selene.exe" src
-& "$env:USERPROFILE\.rokit\bin\rojo.exe" build default.project.json --output "$env:TEMP\YanzoFrame_V1_StorageModule.rbxlx"
+& "$env:USERPROFILE\.rokit\bin\rojo.exe" build default.project.json --output "$env:TEMP\YanzoFrame_V2.rbxlx"
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ```
 
