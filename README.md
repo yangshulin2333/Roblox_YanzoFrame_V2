@@ -8,7 +8,7 @@
 
 ## 当前定位
 
-`YanzoFrame_V0` 已作为基础框架本体冻结。本项目是 V1 复制件，当前只做 StorageModule。
+`YanzoFrame_V0` 已作为基础框架本体冻结。本项目是 V2 复制件，当前只做 StorageModule。
 
 当前仍保留 V0 的最小底座能力：
 
