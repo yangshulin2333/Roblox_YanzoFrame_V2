@@ -233,6 +233,6 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 
 ## 相关文档
 
-- `docs/V1最小框架边界_MinimumFrameworkScope.md`：V2 保留与不保留什么。
+- `docs/V2最小框架边界_MinimumFrameworkScope.md`：V2 保留与不保留什么。
 - `docs/StorageModule使用规则_StorageModuleUsage.md`：存档 API 的详细规则。
 - `docs/ResourceModule使用规则_ResourceModuleUsage.md`：资源目录和查找规则。

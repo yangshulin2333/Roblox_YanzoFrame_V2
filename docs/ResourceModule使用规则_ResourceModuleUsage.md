@@ -45,4 +45,4 @@ local clone, cloneError = resourceService:CloneServerTemplate("Accessories/Start
 
 - 自动上传、下载、扫描或迁移 Roblox 作品资源。
 - 同名封装 Roblox 原生 `AssetService`。
-- 把鞋子、翅膀、跑步机等游戏资源或规则加入 V1。
+- 把鞋子、翅膀、跑步机等游戏资源或规则加入 V2。
