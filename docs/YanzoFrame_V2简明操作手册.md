@@ -72,13 +72,7 @@ Roblox Studio 中的服务与模板
 
 ## 5. 最常用：服务器业务如何读写玩家数据
 
-业务 Service 只能依赖 `StorageService`，不能直接 `require` `ProfileStoreStorage`、`MemoryStorage` 或第三方 `ProfileStore`。
-
-最小使用顺序：
-
-1. 玩家进入后先等待数据就绪。
-2. 读取或更新自己业务模块的数据。
-3. 把可显示的结果同步给 Client；如果需要 Network，就让 Client 请求 Server，Server 返回结果。
+业务 Service 只能依赖 `StorageService`，不能直接 `require` `ProfileStoreStorage`、`MemoryStorage` 或第三方 `ProfileStore`。完整接口表和结果码见 `docs/StorageModule使用规则_StorageModuleUsage.md`。
 
 ```lua
 -- 只负责在 Server 增加一个游戏模块中的胜利数；Client 不传胜利数，也不直接写存档。
@@ -99,12 +93,7 @@ function WinService:AddWin(player)
 end
 ```
 
-要点：
-
-- `GetPlayerModuleData` 返回的是副本，改完副本不会保存。
-- 需要保存时使用 `UpdatePlayerModuleData`。
-- `WaitForPlayerData` 失败时要处理其结果，例如 `DATA_LOAD_FAILED`、`DATA_READY_TIMEOUT`、`PLAYER_LEFT`。
-- 不要在 Client 用 Attribute 当作永久数据源；Attribute 只能作为 HUD 的运行时镜像。
+不要在 Client 用 Attribute 当作永久数据源；Attribute 只能作为 HUD 的运行时镜像。
 
 ## 6. Client 与 Server 通信怎么写
 
@@ -150,23 +139,7 @@ end
 
 ### 服务器私有模板
 
-```text
-src/ServerStorage/Resources/
-└─ Accessories/
-   └─ StarterHat
-```
-
-Server 需要生成运行时副本时：
-
-```lua
--- 只从 ServerStorage.Resources 查找模板，并克隆到明确的运行时父级。
-local clone, reason = resourceService:CloneServerTemplate("Accessories/StarterHat", workspace.RuntimeItems)
-if clone == nil then
-    warn("资源创建失败：" .. reason)
-end
-```
-
-`ResourceService` 当前只提供服务器模板的查找和克隆。它不管理价格、装备资格、资源 ID 商城或自动导入。
+服务器专用模板放在 `src/ServerStorage/Resources/`，查找和克隆调用 `resourceService:FindServerTemplate` / `CloneServerTemplate`；完整规则和路径表见 `docs/ResourceModule使用规则_ResourceModuleUsage.md`。
 
 ### Client UI 模板
 
@@ -212,15 +185,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 
 ## 10. 当前 V2 的边界检查
 
-在准备新增一个“通用模块”前，先问五个问题：
-
-1. 它是否不包含具体游戏名称、货币、价格、奖励和场景布局？
-2. 是否已经有至少两个真实调用点或两个项目遇到同一问题？
-3. 能否一句话说清 API、数据所有者和失败结果？
-4. 是否有最小验证方式？
-5. 接入时是否不用重写已有游戏业务？
-
-任何一项答案是否定的，就先写在候选记录或留在游戏项目中，不加入框架。
+在准备新增一个“通用模块”前，先过一遍 `docs/V2最小框架边界_MinimumFrameworkScope.md` 里“新能力进入 V2 的五个门槛”；任何一项不满足，就先写在候选记录或留在游戏项目中，不加入框架。
 
 ## 11. 推荐掌握顺序
 
