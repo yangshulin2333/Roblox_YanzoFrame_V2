@@ -65,11 +65,10 @@
 
 ```powershell
 cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2
-wally install
-stylua --check src
-selene src
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ```
+
+这一步已经包含了 `wally install`、`stylua --check`、`selene` 和 `rojo build`，不要再手打裸的 `wally`/`stylua`/`selene`/`rojo` 命令——Windows PATH 上可能命中版本不同的全局安装。
 
 你还需要能在 Studio 中确认：
 

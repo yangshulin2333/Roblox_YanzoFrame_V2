@@ -156,13 +156,12 @@ src/ReplicatedStorage/Resources/UI/
 
 ```powershell
 cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2
-& "$env:USERPROFILE\.rokit\bin\wally.exe" install
-& "$env:USERPROFILE\.rokit\bin\rojo.exe" serve default.project.json --address 127.0.0.1 --port 34872
+powershell -ExecutionPolicy Bypass -File .\scripts\Serve-Rojo.ps1
 ```
 
-`ServerPackages/` 被 `.gitignore` 排除，每次都要靠 `wally install` 重新生成；跳过这一步、`ServerPackages/` 还没生成时启动 `rojo serve`，会报 `$path` 找不到 `ProfileStore.luau` 的错误。
+这个脚本会先 `wally install` 重新生成 `ServerPackages/`（它被 `.gitignore` 排除，不重装会导致 `rojo serve` 因为 `$path` 找不到 `ProfileStore.luau` 而报错退出），再用 Rokit 锁定版本的 `rojo` 启动服务。不要自己手打裸的 `rojo`/`wally` 命令——这台机器的 PATH 里可能还装着版本不同的全局 `rojo`（例如 WinGet 装的），裸命令解析到那个版本会导致插件和服务端协议不匹配，报 `protocolVersion` 相关的错误。
 
-在 Roblox Studio 的 Rojo 插件连接 `127.0.0.1:34872`。不要用裸的 `rojo`/`wally` 命令，Windows PATH 可能命中版本不同的全局安装，导致插件和服务端协议不匹配。
+在 Roblox Studio 的 Rojo 插件连接 `127.0.0.1:34872`。
 
 ### 修改后验证
 

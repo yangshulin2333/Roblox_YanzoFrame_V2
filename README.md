@@ -110,12 +110,12 @@ docs/Git简化工作流_GitSimpleWorkflow.md
 ## Studio 使用方式
 
 ```powershell
-rojo serve default.project.json --address 127.0.0.1 --port 34872
+powershell -ExecutionPolicy Bypass -File .\scripts\Serve-Rojo.ps1
 ```
 
-然后在 Roblox Studio 中连接 Rojo 插件。
+然后在 Roblox Studio 中连接 Rojo 插件。不要手打裸的 `rojo serve` —— Windows PATH 上可能还装着版本不同的全局 `rojo`（比如 WinGet 装的），版本对不上会导致插件报 `protocolVersion` 相关的错误。
 
-修改 `default.project.json` 或首次执行 `wally install` 后，需要停止并重新运行 `rojo serve`，再让 Studio 重新连接。
+修改 `default.project.json` 或首次执行 `wally install` 后，需要停止并重新运行上面的脚本，再让 Studio 重新连接。
 
 ## 掌握顺序
 
