@@ -38,6 +38,18 @@ end
 return MyService
 ```
 
+## Service 之间怎么互相调用
+
+每个 Service 在 `Init(context)` 里都能拿到 `context.Services`，里面有其他所有 Service 的引用。
+
+规则很简单：
+
+- 只能调用别的 Service 没有下划线前缀的方法，例如 `StorageService:GetPlayerData(player)`。
+- 不能直接读写别的 Service 用下划线开头的字段，例如 `otherService._xxx`。
+- 想要的东西对方没有对外提供方法，就去给对方加一个方法，不要绕过去直接拿。
+
+这样做是为了：以后 Service 一多，任何一个 Service 想改自己内部的字段名字或者实现方式，都不用担心把别的 Service 一起改坏。
+
 ## Controller 是什么
 
 Controller 是客户端模块。

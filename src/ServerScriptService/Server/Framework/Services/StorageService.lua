@@ -100,6 +100,8 @@ function StorageService:_openPlayerSafely(player)
 	end
 end
 
+-- 关服时不需要在这里额外保存数据：ProfileStore 库自己注册了 game:BindToClose，
+-- 会保存并释放所有还开着的 profile，并且真的等保存完成才放行关服。
 function StorageService:Start()
 	Players.PlayerAdded:Connect(function(player)
 		task.spawn(function()
