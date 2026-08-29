@@ -8,5 +8,4 @@ return {
 	require(FrameworkServices.ResourceService),
 	require(FrameworkServices.StorageService),
 	require(FrameworkServices.PlayerSettingsService),
-	require(FrameworkServices.DeveloperService),
 }

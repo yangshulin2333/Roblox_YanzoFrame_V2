@@ -16,7 +16,6 @@ V1 的目标不是“预先准备所有游戏系统”，而是让新项目能�
 | 存档 | `StorageService`、存储适配器、`StorageConfig` | V1 的核心目标：服务器权威的玩家数据生命周期。 |
 | 资源 | `ServerStorage.Resources`、`ReplicatedStorage.Resources`、`ResourceService` | 区分服务器模板、客户端可读模板和运行时副本。 |
 | 纯工具 | `TableUtil.DeepCopy` | 已有多处真实调用，且不依赖 Roblox 生命周期。 |
-| 开发期 | `DeveloperService`、`DeveloperPanel` 模板、`DeveloperConfig` | 安全重置当前测试玩家的整档数据。 |
 | UI 模板 | `Resources.UI`、每个 GUI 自己的 Controller | 已解决模板来源和运行时 `PlayerGui` 副本的职责问题。 |
 
 ## 当前明确不加入

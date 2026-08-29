@@ -43,14 +43,11 @@ try {
         "src/StarterPlayer/StarterPlayerScripts/Client/Framework/Runtime/ControllerRegistry.lua",
         "src/ServerScriptService/Server/Framework/Services/NetService.lua",
         "src/ServerScriptService/Server/Framework/Services/StorageService.lua",
-        "src/ServerScriptService/Server/Framework/Services/DeveloperService.lua",
         "src/ServerScriptService/Server/Framework/Storage/ProfileStoreStorage.lua",
         "src/ServerScriptService/Server/Framework/Services/PlayerSettingsService.lua",
-    "src/ReplicatedStorage/Framework/Shared/Storage/MemoryStorage.lua",
-        "src/ReplicatedStorage/Resources/UI/DeveloperPanel.model.json",
+        "src/ReplicatedStorage/Framework/Shared/Storage/MemoryStorage.lua",
         "src/ReplicatedStorage/Module/Shared/Config/LogConfig.lua",
-    "src/ReplicatedStorage/Module/Shared/Config/StorageConfig.lua",
-    "src/ReplicatedStorage/Module/Shared/Config/DeveloperConfig.lua"
+        "src/ReplicatedStorage/Module/Shared/Config/StorageConfig.lua"
     )
 
     foreach ($file in $requiredFiles) {

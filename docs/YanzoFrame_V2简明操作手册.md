@@ -12,7 +12,6 @@ YanzoFrame V2 是 Roblox 项目的**最小通用底座**，不是一套已经写
 | Client 与 Server 通信 | `NetClient` / `NetService` | Server |
 | 服务器私有模型模板 | `ServerStorage.Resources` / `ResourceService` | Server |
 | Client 可见 UI 模板 | `ReplicatedStorage.Resources.UI` | Client 负责显示，Server 负责真实结果 |
-| 开发期重置自己的存档 | `DeveloperPanel` / `DeveloperService` | Server |
 | 启动、日志、基础校验 | Registry、`Logger`、Rokit 验证脚本 | 框架 |
 
 它**不负责**商店、背包、货币、鞋子、翅膀、跑步机、奖励数值或场景布局。这些必须留在具体游戏项目的业务代码中。
@@ -44,7 +43,7 @@ Roblox Studio 中的服务与模板
 | --- | --- | --- |
 | `src/ReplicatedStorage/Framework` | 可复用底座：网络、日志、存档接口、纯工具 | 游戏的鞋子 ID、价格、胜利数 |
 | `src/ReplicatedStorage/Module/Shared/Config` | 当前项目配置与默认存档结构 | 玩家运行时数据 |
-| `src/ServerScriptService/Server/Framework/Services` | Server 生命周期、存档、网络、资源、开发者入口 | 具体游戏玩法 Service |
+| `src/ServerScriptService/Server/Framework/Services` | Server 生命周期、存档、网络、资源 | 具体游戏玩法 Service |
 | `src/StarterPlayer/StarterPlayerScripts/Client/Framework/Controllers` | 每个复杂 UI 的 Client 控制器 | 真实奖励、存档写入 |
 | `src/ServerStorage/Resources` | 玩家永远不应直接看到的模型模板 | 已放进地图的展示副本 |
 | `src/ReplicatedStorage/Resources/UI` | Client 需要克隆的 UI 模板 | 服务器私有模型 |
@@ -178,20 +177,7 @@ src/ReplicatedStorage/Resources/UI/
 
 每个复杂 GUI 的 Controller 负责：从 `ReplicatedStorage.Resources.UI` 克隆模板到 `PlayerGui`、绑定按钮、更新文本和控制显示。位置、大小、颜色、层级由模板/Studio 管理，不在 Controller 中硬编码布局。
 
-现有示例：`DeveloperPanel.model.json` 与 `DeveloperPanelController.lua`。
-
-## 8. 开发者面板怎么使用
-
-开发者面板是框架提供的**最小整档重置工具**：
-
-- Studio Play 默认可见。
-- 点击“初始化全部数据”后还需要二次确认。
-- Server 将当前玩家数据恢复到 `StorageConfig.DefaultData`，然后让该玩家重新进入，确保缓存、角色、HUD 都重新加载。
-- 正式服务器默认拒绝；如需受控测试，才在 `DeveloperConfig.AllowedUserIds` 填自己的 Roblox UserId。
-
-它不提供 Speed、Wins、道具赠送等业务调试按钮；这些由具体游戏决定是否实现。
-
-## 9. 每次开发的固定操作
+## 8. 每次开发的固定操作
 
 ### 启动同步
 
@@ -214,7 +200,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 
 最后在 Studio Play 验收实际链路。静态检查通过只说明代码和 Rojo 映射可用，不等于 UI、模型、存档体验都正确。
 
-## 10. 常见问题先查哪里
+## 9. 常见问题先查哪里
 
 | 现象 | 先查位置 | 常见原因 |
 | --- | --- | --- |
@@ -222,10 +208,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 | Client 找不到 Remote | `RemoteNames.lua`、对应 Service 的 `Start()` | 名字不一致或 Server 未注册 |
 | 玩家刚进入就读不到数据 | `WaitForPlayerData` 返回码 | 数据仍在加载、加载失败或玩家离开 |
 | UI 没出现 | `Resources/UI` 模板、`ControllerList.lua` | 模板未同步、Controller 未登记或名称不一致 |
-| 重置后状态看起来没刷新 | 是否真的重新进入 | 热重置没有统一的业务缓存刷新合同 |
 | 日志太多 | `LogConfig.lua` | 当前 V2 基线默认是 `Debug`；稳定后可改回 `Warn` |
 
-## 11. 当前 V2 的边界检查
+## 10. 当前 V2 的边界检查
 
 在准备新增一个“通用模块”前，先问五个问题：
 
@@ -237,7 +222,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 
 任何一项答案是否定的，就先写在候选记录或留在游戏项目中，不加入框架。
 
-## 12. 推荐掌握顺序
+## 11. 推荐掌握顺序
 
 1. `default.project.json`：先明白文件为何会出现在 Studio 的不同服务中。
 2. `Main.server.lua`、`ServiceRegistry.lua`、`ServiceList.lua`：明白 Server 如何启动。
@@ -245,14 +230,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 4. `NetService.lua`、`NetClient.lua`、`NetResult.lua`：明白请求边界。
 5. `StorageService.lua`、`StorageConfig.lua`：明白数据读写与就绪。
 6. `ResourceService.lua` 与两个 `Resources` 目录：明白模板可见性。
-7. `DeveloperService.lua`、`DeveloperPanelController.lua`：把前面的启动、网络、存档和 UI 串成一条真实链路。
-
-读到第 7 步时，建议直接在 Studio 运行一次开发者面板的“打开确认框 → 取消”，不要点击真正确认重置。这样可以不破坏自己的测试档案，同时验证完整 Client → Server → Client 链路。
 
 ## 相关文档
 
 - `docs/V1最小框架边界_MinimumFrameworkScope.md`：V2 保留与不保留什么。
 - `docs/StorageModule使用规则_StorageModuleUsage.md`：存档 API 的详细规则。
 - `docs/ResourceModule使用规则_ResourceModuleUsage.md`：资源目录和查找规则。
-- `docs/UI模板迁移_DeveloperPanel.md`：UI 模板的第一个实际案例。
-- `docs/开发者数据重置_DeveloperDataReset.md`：安全重置的完整说明。
