@@ -1,6 +1,7 @@
 ﻿$ErrorActionPreference = "Stop"
 
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
+$buildPath = Join-Path ([System.IO.Path]::GetTempPath()) "YanzoFrame_V2_Base_Check.rbxlx"
 Push-Location $Root
 
 try {
@@ -27,16 +28,21 @@ try {
     $Selene = Get-RokitToolPath "selene"
     $Rojo = Get-RokitToolPath "rojo"
 
-    & $Wally install
-    if ($LASTEXITCODE -ne 0) {
-        throw "Rokit Wally 安装依赖失败"
+    $profileStorePath = "ServerPackages/_Index/lm-loleris_profilestore@1.0.3/profilestore/ProfileStore.luau"
+    if (-not (Test-Path -LiteralPath $profileStorePath)) {
+        & $Wally install
+        if ($LASTEXITCODE -ne 0) {
+            throw "Rokit Wally 安装依赖失败"
+        }
+    } else {
+        Write-Host "[Validate-ModuleBase] 依赖已存在，跳过 wally install，避免中断正在运行的 Rojo。"
     }
 
     $requiredFiles = @(
         "default.project.json",
         "wally.toml",
         "wally.lock",
-        "ServerPackages/_Index/lm-loleris_profilestore@1.0.3/profilestore/ProfileStore.luau",
+        $profileStorePath,
         "src/ServerScriptService/Server/Main.server.lua",
         "src/StarterPlayer/StarterPlayerScripts/Client/Main.client.lua",
         "src/ServerScriptService/Server/Framework/Runtime/ServiceRegistry.lua",
@@ -47,7 +53,13 @@ try {
         "src/ServerScriptService/Server/Framework/Services/PlayerSettingsService.lua",
         "src/ReplicatedStorage/Framework/Shared/Storage/MemoryStorage.lua",
         "src/ReplicatedStorage/Module/Shared/Config/LogConfig.lua",
-        "src/ReplicatedStorage/Module/Shared/Config/StorageConfig.lua"
+        "src/ReplicatedStorage/Module/Shared/Config/StorageConfig.lua",
+        "tests/UnitTest/RunUnitTest.lua",
+        "tests/UnitTest/Cases/MemoryStorage_Test.lua",
+        "tests/UnitTest/Cases/NetContracts_Test.lua",
+        "tests/UnitTest/Cases/ProfileStoreStorage_Test.lua",
+        "tests/UnitTest/Cases/StorageService_Test.lua",
+        "tests/UnitTestRunner.server.lua"
     )
 
     foreach ($file in $requiredFiles) {
@@ -56,17 +68,16 @@ try {
         }
     }
 
-    & $Stylua --check src
+    & $Stylua --check src tests
     if ($LASTEXITCODE -ne 0) {
         throw "Rokit StyLua 格式检查失败"
     }
 
-    & $Selene src
+    & $Selene src tests
     if ($LASTEXITCODE -ne 0) {
         throw "Rokit Selene 静态检查失败"
     }
 
-    $buildPath = Join-Path ([System.IO.Path]::GetTempPath()) "YanzoFrame_V2_Base_Check.rbxlx"
     & $Rojo build default.project.json --output $buildPath
     if ($LASTEXITCODE -ne 0) {
         throw "Rokit Rojo 构建失败"
@@ -79,10 +90,12 @@ try {
     if ($buildContent -match '<string name="Name">_Index</string>') {
         throw "Wally 的 _Index 不能成为运行时依赖"
     }
-
-    Remove-Item -LiteralPath $buildPath -Force -ErrorAction SilentlyContinue
+    if ($buildContent -notmatch '<string name="Name">UnitTestRunner</string>[\s\S]{0,500}<bool name="Disabled">true</bool>') {
+        throw "Rojo 构建中缺少默认禁用的 UnitTestRunner"
+    }
 
     Write-Host "MODULE_BASE_CHECK_OK"
 } finally {
+    Remove-Item -LiteralPath $buildPath -Force -ErrorAction SilentlyContinue
     Pop-Location
 }

@@ -78,11 +78,13 @@
 
 ```powershell
 & "$env:USERPROFILE\.rokit\bin\wally.exe" install
-& "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src
-& "$env:USERPROFILE\.rokit\bin\selene.exe" src
+& "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src tests
+& "$env:USERPROFILE\.rokit\bin\selene.exe" src tests
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ```
 
 不得依赖 Windows PATH 中的同名裸命令。项目工具版本以 `rokit.toml` 为准；新机器先在项目根目录执行 `rokit install`。
 
 涉及 Roblox Studio 的内容，还需要 Studio 手动确认。
+
+`tests` 只放服务器侧最小行为测试。测试映射到 `ServerStorage.UnitTest`，`UnitTestRunner` 必须默认禁用，不能让普通 Play 自动执行测试。

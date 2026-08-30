@@ -1,6 +1,6 @@
 # YanzoFrame_V2
 
-> 当前发布基线：**YanzoFrame V2.0.0 — Framework Baseline**。仓库、本地目录和 Rojo 项目名均已统一为 `YanzoFrame_V2`。
+> 当前最新稳定标签是 `v2.1.0-storage-reliability`。
 
 这是从 `YanzoFrame_V0` 复制出来的第一个正式 Roblox 可复用模块工程，用于学习和开发 `StorageModule`。
 
@@ -22,6 +22,11 @@
 
 当前版本是 `StorageModule V1.1`：`MemoryStorage` 用于测试，`ProfileStoreStorage` 通过 ProfileStore 保存正式玩家档案。
 
+### v2.1.0 兼容性说明
+
+- 正式存档名已从 `YanzoFrame_PlayerData_V1` 改为 `YanzoFrame_PlayerData_V2`；旧命名空间的数据不会被本版本自动读取。
+- 默认开发者整档重置 Service、Remote 和 UI 已移除；框架只保留服务器侧 `StorageService:ResetPlayerData()` 方法。
+
 ## 当前不包含什么
 
 - 自制原生 DataStore 适配器
@@ -42,6 +47,7 @@
 | `src/ReplicatedStorage/Module` | 当前模块自己的配置和共享数据 |
 | `src/ServerScriptService/Server` | 服务端入口和服务 |
 | `src/StarterPlayer/StarterPlayerScripts/Client` | 客户端入口和控制器 |
+| `tests` | 仅服务器可见的最小行为测试；默认不自动运行 |
 | `docs` | 学习规则和模块设计文档 |
 | `scripts` | 本地验证脚本 |
 
@@ -51,13 +57,15 @@
 cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2
 rokit install
 & "$env:USERPROFILE\.rokit\bin\wally.exe" install
-& "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src
-& "$env:USERPROFILE\.rokit\bin\selene.exe" src
+& "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src tests
+& "$env:USERPROFILE\.rokit\bin\selene.exe" src tests
 & "$env:USERPROFILE\.rokit\bin\rojo.exe" build default.project.json --output "$env:TEMP\YanzoFrame_V2.rbxlx"
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ```
 
 不要直接依赖 `stylua`、`selene`、`rojo` 或 `wally` 的裸命令。Windows PATH 可能优先命中 Cargo 或其他全局版本；本项目以 `rokit.toml` 和 `$env:USERPROFILE\.rokit\bin` 中的工具作为唯一验证入口。
+
+`Validate-ModuleBase.ps1` 只在 `ServerPackages` 缺失时执行 `wally install`。依赖已存在时会直接复用，避免验证过程中清空依赖目录并中断正在运行的 Rojo 服务。
 
 ## 日志使用
 
@@ -67,7 +75,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 src/ReplicatedStorage/Module/Shared/Config/LogConfig.lua
 ```
 
-当前 V2 基线默认是 `Debug`，便于开发期观察启动和数据链路；准备稳定试玩或发布时，可改回 `Warn`，避免 Roblox Studio 输出窗口刷屏。
+当前稳定候选默认是 `Warn`，避免正常 Play 时刷屏。定位问题时可临时改为 `Info` 或 `Debug`，验收后再恢复 `Warn`。
 
 调试时可以临时改成：
 
@@ -84,6 +92,20 @@ ScopeLevels = {
 ```
 
 可用等级从少到多是：`Error`、`Warn`、`Info`、`Debug`。
+
+## 最小行为测试
+
+测试代码映射到 `ServerStorage.UnitTest`，不会复制给 Client。`ServerScriptService.UnitTestRunner` 默认 `Disabled = true`，所以普通 Play 不会自动运行测试。
+
+当前只覆盖最基础、最稳定的公开契约：
+
+- `MemoryStorage` 返回数据副本、更新已打开 key、拒绝读取未打开 key。
+- `ProfileStoreStorage` 在打开后的准备阶段异常时释放会话，并拒绝把旧会话更新写进新会话。
+- `StorageService` 在同一 UserId 快速重进时接管已经结束的旧加载，不会永久停在 `LOADING`。
+- `RemoteGuards` 拒绝非法 Remote 名称。
+- `NetResult` 保持统一成功/失败结构。
+
+需要运行时，临时启用 `UnitTestRunner` 后 Play；看到 `[SUMMARY] 9 run, 9 passed, 0 failed` 即通过，完成后恢复禁用。玩家存档跨重进仍属于单独的 Studio 人工验收，不由这组内存测试代替。本稳定版已在开启 API Services 的 Studio Place 中完成一次“写入临时值 -> 重进读回 -> 恢复原值 -> 再次重进确认”的验收；更换 Place、存档名或 Schema 后仍需重新验收。
 
 ## Git 简化命令
 

@@ -82,12 +82,19 @@ function ProfileStoreStorage:Open(key, options)
 		return nil, "PROFILE_LOAD_FAILED"
 	end
 
-	if options.UserId ~= nil then
-		profile:AddUserId(options.UserId)
-	end
-	profile:Reconcile()
+	local prepareOk, isValid, validationError = pcall(function()
+		if options.UserId ~= nil then
+			profile:AddUserId(options.UserId)
+		end
+		profile:Reconcile()
+		return self:_validateData(profile.Data)
+	end)
 
-	local isValid, validationError = self:_validateData(profile.Data)
+	if not prepareOk then
+		pcall(profile.EndSession, profile)
+		error(isValid, 2)
+	end
+
 	if not isValid then
 		profile:EndSession()
 		return nil, "INVALID_PROFILE_DATA: " .. tostring(validationError)
@@ -144,9 +151,13 @@ function ProfileStoreStorage:Update(key, updateFn)
 		error("storage key is already being updated: " .. key, 2)
 	end
 
-	self._updatingByKey[key] = true
-	local ok, nextData = pcall(updateFn, self:Get(key))
-	self._updatingByKey[key] = nil
+	local profile = self:_getProfile(key)
+	local updateToken = {}
+	self._updatingByKey[key] = updateToken
+	local ok, nextData = pcall(updateFn, TableUtil.DeepCopy(profile.Data))
+	if self._updatingByKey[key] == updateToken then
+		self._updatingByKey[key] = nil
+	end
 
 	if not ok then
 		error(nextData, 2)
@@ -154,6 +165,10 @@ function ProfileStoreStorage:Update(key, updateFn)
 
 	if nextData == nil then
 		error("updateFn must return storage data", 2)
+	end
+
+	if self._profilesByKey[key] ~= profile or not profile:IsActive() then
+		error("storage session changed during update: " .. key, 2)
 	end
 
 	return self:Set(key, nextData)

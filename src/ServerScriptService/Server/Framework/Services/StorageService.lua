@@ -165,14 +165,52 @@ function StorageService:OpenPlayer(player)
 		return self:GetKey(key)
 	end
 
-	if self._openingByKey[key] then
+	if self._openingByKey[key] ~= nil then
 		self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_LOADING
-		return nil, "PLAYER_DATA_ALREADY_LOADING"
+
+		while self._openingByKey[key] ~= nil do
+			if player.Parent ~= Players then
+				return nil, "PLAYER_LEFT"
+			end
+
+			local status = self._playerDataStatusByKey[key]
+			if status == PLAYER_DATA_STATUS_LOAD_FAILED then
+				return nil, "DATA_LOAD_FAILED"
+			end
+
+			if status == PLAYER_DATA_STATUS_SESSION_ENDED then
+				return nil, "DATA_SESSION_ENDED"
+			end
+
+			task.wait(StorageConfig.PlayerDataReadyPollSeconds)
+		end
+
+		if self:IsKeyOpen(key) then
+			self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_READY
+			return self:GetKey(key)
+		end
+
+		local status = self._playerDataStatusByKey[key]
+		if status == PLAYER_DATA_STATUS_LOAD_FAILED then
+			return nil, "DATA_LOAD_FAILED"
+		end
+
+		if status == PLAYER_DATA_STATUS_SESSION_ENDED then
+			return nil, "DATA_SESSION_ENDED"
+		end
 	end
 
-	self._openingByKey[key] = true
+	local openingToken = {}
+	self._openingByKey[key] = openingToken
 	self._cancelOpenByKey[key] = nil
 	self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_LOADING
+
+	local function finishOpening()
+		if self._openingByKey[key] == openingToken then
+			self._openingByKey[key] = nil
+			self._cancelOpenByKey[key] = nil
+		end
+	end
 
 	local ok, data, openError = pcall(self.OpenKey, self, key, {
 		UserId = player.UserId,
@@ -192,13 +230,11 @@ function StorageService:OpenPlayer(player)
 		end,
 	})
 
-	self._openingByKey[key] = nil
-	self._cancelOpenByKey[key] = nil
-
 	if not ok then
 		if player.Parent == Players then
 			self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_LOAD_FAILED
 		end
+		finishOpening()
 		error(data, 2)
 	end
 
@@ -206,15 +242,21 @@ function StorageService:OpenPlayer(player)
 		if player.Parent == Players then
 			self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_LOAD_FAILED
 		end
+		finishOpening()
 		return nil, openError
 	end
 
 	if player.Parent ~= Players then
-		self:CloseKey(key)
+		local closeOk, closeError = pcall(self.CloseKey, self, key)
+		finishOpening()
+		if not closeOk then
+			error(closeError, 2)
+		end
 		return nil, "PLAYER_LEFT_DURING_LOAD"
 	end
 
 	self._playerDataStatusByKey[key] = PLAYER_DATA_STATUS_READY
+	finishOpening()
 	self._logger.Debug(self.Name, "Player data opened: " .. player.Name)
 	return data
 end

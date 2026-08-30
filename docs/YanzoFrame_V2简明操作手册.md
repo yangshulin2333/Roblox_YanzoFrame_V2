@@ -44,7 +44,7 @@ Roblox Studio 中的服务与模板
 | `src/ReplicatedStorage/Framework` | 可复用底座：网络、日志、存档接口、纯工具 | 游戏的鞋子 ID、价格、胜利数 |
 | `src/ReplicatedStorage/Module/Shared/Config` | 当前项目配置与默认存档结构 | 玩家运行时数据 |
 | `src/ServerScriptService/Server/Framework/Services` | Server 生命周期、存档、网络、资源 | 具体游戏玩法 Service |
-| `src/StarterPlayer/StarterPlayerScripts/Client/Framework/Controllers` | 每个复杂 UI 的 Client 控制器 | 真实奖励、存档写入 |
+| 游戏项目自行新增的 Client Controller | 每个复杂 UI 的客户端交互；本仓库当前不预置业务 Controller | 真实奖励、存档写入 |
 | `src/ServerStorage/Resources` | 玩家永远不应直接看到的模型模板 | 已放进地图的展示副本 |
 | `src/ReplicatedStorage/Resources/UI` | Client 需要克隆的 UI 模板 | 服务器私有模型 |
 
@@ -168,12 +168,16 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Serve-Rojo.ps1
 ```powershell
 cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2
 & "$env:USERPROFILE\.rokit\bin\wally.exe" install
-& "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src
-& "$env:USERPROFILE\.rokit\bin\selene.exe" src
+& "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src tests
+& "$env:USERPROFILE\.rokit\bin\selene.exe" src tests
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ```
 
 最后在 Studio Play 验收实际链路。静态检查通过只说明代码和 Rojo 映射可用，不等于 UI、模型、存档体验都正确。
+
+验证脚本只会在 `ServerPackages` 缺失时运行 `wally install`；依赖已存在时会复用当前文件，避免日常验证中断正在运行的 Rojo 服务。修改 `wally.toml` 或 `wally.lock` 后，应先停止 Rojo，再重新安装依赖并启动服务。
+
+需要运行最小行为测试时，临时启用 `ServerScriptService.UnitTestRunner` 后 Play，确认输出为 `[SUMMARY] 9 run, 9 passed, 0 failed`，完成后恢复禁用。测试只覆盖内存 Storage、ProfileStore 异常与跨会话更新防护、快速重进加载和 Remote 基础契约，不能代替 ProfileStore 跨重进验收。
 
 ## 9. 常见问题先查哪里
 
@@ -183,7 +187,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 | Client 找不到 Remote | `RemoteNames.lua`、对应 Service 的 `Start()` | 名字不一致或 Server 未注册 |
 | 玩家刚进入就读不到数据 | `WaitForPlayerData` 返回码 | 数据仍在加载、加载失败或玩家离开 |
 | UI 没出现 | `Resources/UI` 模板、`ControllerList.lua` | 模板未同步、Controller 未登记或名称不一致 |
-| 日志太多 | `LogConfig.lua` | 当前 V2 基线默认是 `Debug`；稳定后可改回 `Warn` |
+| 日志太多 | `LogConfig.lua` | 稳定候选默认是 `Warn`；检查是否被临时改成 `Info` 或 `Debug` |
 
 ## 10. 当前 V2 的边界检查
 

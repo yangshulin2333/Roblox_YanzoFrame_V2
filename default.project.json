@@ -24,12 +24,21 @@
       },
       "Server": {
         "$path": "src/ServerScriptService/Server"
+      },
+      "UnitTestRunner": {
+        "$path": "tests/UnitTestRunner.server.lua",
+        "$properties": {
+          "Disabled": true
+        }
       }
     },
     "ServerStorage": {
       "$className": "ServerStorage",
       "Resources": {
         "$path": "src/ServerStorage/Resources"
+      },
+      "UnitTest": {
+        "$path": "tests/UnitTest"
       }
     },
     "StarterPlayer": {
