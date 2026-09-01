@@ -14,6 +14,8 @@
 
 Service 是服务端模块。
 
+通用底座 Service 放在 `Server/Framework/Services` 并登记到 Framework `ServiceList`；具体游戏 Service 放在 `Server/Game` 下并登记到 `GameServiceList`。Framework 列表先启动，Game 列表后启动。
+
 它负责：
 
 - 修改真实数据
@@ -53,6 +55,8 @@ return MyService
 ## Controller 是什么
 
 Controller 是客户端模块。
+
+通用 Controller 登记到 Framework `ControllerList`；具体游戏 Controller 放在 `Client/Game` 下并登记到 `GameControllerList`。Framework 列表先启动，Game 列表后启动。
 
 它负责：
 

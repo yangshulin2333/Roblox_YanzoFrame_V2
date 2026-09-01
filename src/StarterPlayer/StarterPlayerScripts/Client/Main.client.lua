@@ -1,17 +1,17 @@
 --!strict
 
 local ControllerRegistry = require(script.Parent.Framework.Runtime.ControllerRegistry)
+local FrameworkControllerList = require(script.Parent.Framework.Runtime.ControllerList)
+local GameControllerList = require(script.Parent.Game.Runtime.GameControllerList)
 
---[[
-    本质是：
-    ControllerRegistry.new() 创建一张 self 实例表。
-    return self 后，registry 指向这张表。
+local controllers = {}
+for _, controller in ipairs(FrameworkControllerList) do
+	table.insert(controllers, controller)
+end
+for _, controller in ipairs(GameControllerList) do
+	table.insert(controllers, controller)
+end
 
-    所以：
-    registry 和 new() 里的 self 指向同一张表。
-    也就是：
-    registry ---> ControllerRegistry 实例表
-]]
-local registry = ControllerRegistry.new()
+local registry = ControllerRegistry.new(controllers)
 registry:Init()
 registry:Start()

@@ -5,15 +5,18 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Framework.Shared.App.Logger)
 local Lifecycle = require(ReplicatedStorage.Framework.Shared.App.Lifecycle)
 local NetClient = require(ReplicatedStorage.Framework.Shared.Net.NetClient)
-local ControllerList = require(script.Parent.ControllerList)
 
 local ControllerRegistry = {}
 ControllerRegistry.__index = ControllerRegistry
 
 --创建一张self实例表并返回这张表
-function ControllerRegistry.new()
+function ControllerRegistry.new(controllers)
+	if type(controllers) ~= "table" then
+		error("controllers must be a table", 2)
+	end
+
 	local self = setmetatable({}, ControllerRegistry)
-	self._controllers = ControllerList
+	self._controllers = controllers
 	self._controllersByName = {}
 	self._initialized = false
 	self._started = false

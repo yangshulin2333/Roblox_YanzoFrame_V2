@@ -2,13 +2,13 @@
 
 > 当前最新稳定标签是 `v2.1.0-storage-reliability`。
 
-这是从 `YanzoFrame_V0` 复制出来的第一个正式 Roblox 可复用模块工程，用于学习和开发 `StorageModule`。
+这是从 `YanzoFrame_V0` 复制出来的 Roblox 可复用框架工程。`v2.1.0` 已冻结 StorageModule 稳定基线，后续阶段在此基础上补充明确的项目接入边界。
 
-它不是完整游戏工程，也不是任何具体游戏工程。它的目标是让 StorageModule 可以单独学习、单独验证、最后再接入别的项目。
+它不是完整游戏工程，也不包含具体玩法。它的目标是让通用底座可以单独理解、单独验证，并让具体项目通过 `Game` 入口接入。
 
 ## 当前定位
 
-`YanzoFrame_V0` 已作为基础框架本体冻结。本项目是 V2 复制件，当前只做 StorageModule。
+`YanzoFrame_V0` 已冻结。本项目以 V2.1 StorageModule 为稳定基线，当前阶段只分离 `Framework` 与 `Game` 的注册入口。
 
 当前仍保留 V0 的最小底座能力：
 
@@ -19,6 +19,7 @@
 - ControllerRegistry
 - NetService / NetClient
 - MemoryStorage / ProfileStoreStorage / StorageService
+- Framework/Game 显式 Service 与 Controller 列表
 
 当前版本是 `StorageModule V1.1`：`MemoryStorage` 用于测试，`ProfileStoreStorage` 通过 ProfileStore 保存正式玩家档案。
 
@@ -45,8 +46,10 @@
 |---|---|
 | `src/ReplicatedStorage/Framework` | 可复用底座代码 |
 | `src/ReplicatedStorage/Module` | 当前模块自己的配置和共享数据 |
-| `src/ServerScriptService/Server` | 服务端入口和服务 |
-| `src/StarterPlayer/StarterPlayerScripts/Client` | 客户端入口和控制器 |
+| `src/ServerScriptService/Server/Framework` | 通用服务端底座 |
+| `src/ServerScriptService/Server/Game` | 具体项目的 Service 注册入口 |
+| `src/StarterPlayer/StarterPlayerScripts/Client/Framework` | 通用客户端底座 |
+| `src/StarterPlayer/StarterPlayerScripts/Client/Game` | 具体项目的 Controller 注册入口 |
 | `tests` | 仅服务器可见的最小行为测试；默认不自动运行 |
 | `docs` | 学习规则和模块设计文档 |
 | `scripts` | 本地验证脚本 |
@@ -104,8 +107,9 @@ ScopeLevels = {
 - `StorageService` 在同一 UserId 快速重进时接管已经结束的旧加载，不会永久停在 `LOADING`。
 - `RemoteGuards` 拒绝非法 Remote 名称。
 - `NetResult` 保持统一成功/失败结构。
+- Registry 使用调用方传入的显式列表，并保持 Init/Start 顺序。
 
-需要运行时，临时启用 `UnitTestRunner` 后 Play；看到 `[SUMMARY] 9 run, 9 passed, 0 failed` 即通过，完成后恢复禁用。玩家存档跨重进仍属于单独的 Studio 人工验收，不由这组内存测试代替。本稳定版已在开启 API Services 的 Studio Place 中完成一次“写入临时值 -> 重进读回 -> 恢复原值 -> 再次重进确认”的验收；更换 Place、存档名或 Schema 后仍需重新验收。
+需要运行时，临时启用 `UnitTestRunner` 后 Play；看到 `[SUMMARY] 11 run, 11 passed, 0 failed` 即通过，完成后恢复禁用。玩家存档跨重进仍属于单独的 Studio 人工验收，不由这组内存测试代替。本稳定版已在开启 API Services 的 Studio Place 中完成一次“写入临时值 -> 重进读回 -> 恢复原值 -> 再次重进确认”的验收；更换 Place、存档名或 Schema 后仍需重新验收。
 
 ## Git 简化命令
 

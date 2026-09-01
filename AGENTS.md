@@ -1,15 +1,16 @@
 # YanzoFrame_V2 Agent Rules
 
-本项目是 `D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2`，用于维护 YanzoFrame V2 的可复用 Roblox 框架能力。
+本项目用于维护 YanzoFrame V2 的可复用 Roblox 框架能力。
 
 ## 固定目标
 
-`YanzoFrame_V0` 已作为基础框架本体冻结。本项目只在复制件中推进 `StorageModule`，不再反向扩大 V0 底座。
+`YanzoFrame_V0` 已冻结，`v2.1.0-storage-reliability` 是当前稳定基线。后续只在独立阶段中推进经过确认的框架能力。
 
 当前固定目标：
 
 - 保持 V0 底座结构可理解、可验证。
-- 把 Storage 从“最小内存边界”逐步整理为独立模块。
+- 保持 StorageModule V1.1 的稳定边界。
+- 让 `Framework` 与具体项目的 `Game` 代码明确分离。
 - 每次只推进一个清晰的小阶段。
 - 模块要能单独理解、单独验证、单独接入别的 Roblox 项目。
 
@@ -22,7 +23,9 @@
 ## 代码边界
 
 - `Framework` 放通用底座。
+- `Game` 放具体项目的 Service、Controller 和业务配置。
 - `Module` 放当前模块自己的配置和共享数据。
+- Framework 列表先启动，Game 列表后启动；两类列表都必须显式登记。
 - Server 负责真实状态修改。
 - Client 只负责请求和显示。
 - 配置写在表里，不把数值散落在逻辑里。

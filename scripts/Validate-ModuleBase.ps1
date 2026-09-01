@@ -46,7 +46,9 @@ try {
         "src/ServerScriptService/Server/Main.server.lua",
         "src/StarterPlayer/StarterPlayerScripts/Client/Main.client.lua",
         "src/ServerScriptService/Server/Framework/Runtime/ServiceRegistry.lua",
+        "src/ServerScriptService/Server/Game/Runtime/GameServiceList.lua",
         "src/StarterPlayer/StarterPlayerScripts/Client/Framework/Runtime/ControllerRegistry.lua",
+        "src/StarterPlayer/StarterPlayerScripts/Client/Game/Runtime/GameControllerList.lua",
         "src/ServerScriptService/Server/Framework/Services/NetService.lua",
         "src/ServerScriptService/Server/Framework/Services/StorageService.lua",
         "src/ServerScriptService/Server/Framework/Storage/ProfileStoreStorage.lua",
@@ -59,6 +61,7 @@ try {
         "tests/UnitTest/Cases/NetContracts_Test.lua",
         "tests/UnitTest/Cases/ProfileStoreStorage_Test.lua",
         "tests/UnitTest/Cases/StorageService_Test.lua",
+        "tests/UnitTest/Cases/RuntimeRegistry_Test.lua",
         "tests/UnitTestRunner.server.lua"
     )
 
@@ -92,6 +95,12 @@ try {
     }
     if ($buildContent -notmatch '<string name="Name">UnitTestRunner</string>[\s\S]{0,500}<bool name="Disabled">true</bool>') {
         throw "Rojo 构建中缺少默认禁用的 UnitTestRunner"
+    }
+    if ($buildContent -notmatch '<string name="Name">GameServiceList</string>') {
+        throw "Rojo 构建中缺少 GameServiceList"
+    }
+    if ($buildContent -notmatch '<string name="Name">GameControllerList</string>') {
+        throw "Rojo 构建中缺少 GameControllerList"
     }
 
     Write-Host "MODULE_BASE_CHECK_OK"

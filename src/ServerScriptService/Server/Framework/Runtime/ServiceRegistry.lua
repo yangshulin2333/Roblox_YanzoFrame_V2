@@ -3,14 +3,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Logger = require(ReplicatedStorage.Framework.Shared.App.Logger)
 local Lifecycle = require(ReplicatedStorage.Framework.Shared.App.Lifecycle)
-local ServiceList = require(script.Parent.ServiceList)
 
 local ServiceRegistry = {}
 ServiceRegistry.__index = ServiceRegistry
 
-function ServiceRegistry.new()
+function ServiceRegistry.new(services)
+	if type(services) ~= "table" then
+		error("services must be a table", 2)
+	end
+
 	local self = setmetatable({}, ServiceRegistry)
-	self._services = ServiceList
+	self._services = services
 
 	self._servicesByName = {}
 	self._initialized = false

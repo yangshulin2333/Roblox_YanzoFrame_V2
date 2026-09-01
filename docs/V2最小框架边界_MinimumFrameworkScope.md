@@ -11,6 +11,7 @@ V2 的目标不是“预先准备所有游戏系统”，而是让新项目能�
 | 范围 | 保留内容 | 保留原因 |
 |---|---|---|
 | 启动 | `ServiceRegistry`、`ControllerRegistry`、`Lifecycle` | 统一并可验证地启动服务与控制器。 |
+| 项目边界 | Framework 列表、`GameServiceList`、`GameControllerList` | 通用底座先启动，具体项目模块后启动，双方目录不混放。 |
 | 日志 | `Logger`、`LogConfig` | 排错需要统一格式、等级和业务调用方文本。 |
 | 网络 | `NetService`、`RemoteNames`、`NetResult`、`RemoteGuards` | 客户端请求与服务器校验的最小边界。 |
 | 存档 | `StorageService`、存储适配器、`StorageConfig` | V2 的核心目标：服务器权威的玩家数据生命周期。 |
@@ -53,4 +54,4 @@ V2 的目标不是“预先准备所有游戏系统”，而是让新项目能�
 
 ## 当前结论
 
-V2 现在进入“只修复真实问题，不预建设施”的阶段。下一次修改必须先在候选记录补齐真实证据、范围、验收方式和不做项。
+V2 只保留已确认的通用能力。具体玩法通过 `Game` 列表接入，不进入 `Framework`；下一次修改仍需先明确真实证据、范围、验收方式和不做项。

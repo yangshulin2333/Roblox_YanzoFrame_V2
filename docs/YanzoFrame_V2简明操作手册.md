@@ -24,12 +24,16 @@ YanzoFrame V2 是 Roblox 项目的**最小通用底座**，不是一套已经写
     ▼
 Roblox Studio 中的服务与模板
     │
-    ├─ Server：Main.server.lua → ServiceRegistry → ServiceList 中的 Service
+    ├─ Server：Main.server.lua → ServiceRegistry
+    │       ├─ Framework ServiceList
+    │       └─ GameServiceList
     │       ├─ 修改存档
     │       ├─ 校验 Client 请求
     │       └─ 克隆服务器私有资源
     │
-    └─ Client：Main.client.lua → ControllerRegistry → ControllerList 中的 Controller
+    └─ Client：Main.client.lua → ControllerRegistry
+            ├─ Framework ControllerList
+            └─ GameControllerList
             ├─ 收集输入
             ├─ 请求 Server
             └─ 克隆 UI 模板、显示 Server 返回结果
@@ -44,7 +48,8 @@ Roblox Studio 中的服务与模板
 | `src/ReplicatedStorage/Framework` | 可复用底座：网络、日志、存档接口、纯工具 | 游戏的鞋子 ID、价格、胜利数 |
 | `src/ReplicatedStorage/Module/Shared/Config` | 当前项目配置与默认存档结构 | 玩家运行时数据 |
 | `src/ServerScriptService/Server/Framework/Services` | Server 生命周期、存档、网络、资源 | 具体游戏玩法 Service |
-| 游戏项目自行新增的 Client Controller | 每个复杂 UI 的客户端交互；本仓库当前不预置业务 Controller | 真实奖励、存档写入 |
+| `src/ServerScriptService/Server/Game` | 具体游戏 Service 和显式 `GameServiceList` | 通用框架底座 |
+| `src/StarterPlayer/StarterPlayerScripts/Client/Game` | 具体游戏 Controller 和显式 `GameControllerList` | 真实奖励、存档写入 |
 | `src/ServerStorage/Resources` | 玩家永远不应直接看到的模型模板 | 已放进地图的展示副本 |
 | `src/ReplicatedStorage/Resources/UI` | Client 需要克隆的 UI 模板 | 服务器私有模型 |
 
@@ -177,7 +182,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 
 验证脚本只会在 `ServerPackages` 缺失时运行 `wally install`；依赖已存在时会复用当前文件，避免日常验证中断正在运行的 Rojo 服务。修改 `wally.toml` 或 `wally.lock` 后，应先停止 Rojo，再重新安装依赖并启动服务。
 
-需要运行最小行为测试时，临时启用 `ServerScriptService.UnitTestRunner` 后 Play，确认输出为 `[SUMMARY] 9 run, 9 passed, 0 failed`，完成后恢复禁用。测试只覆盖内存 Storage、ProfileStore 异常与跨会话更新防护、快速重进加载和 Remote 基础契约，不能代替 ProfileStore 跨重进验收。
+需要运行最小行为测试时，临时启用 `ServerScriptService.UnitTestRunner` 后 Play，确认输出为 `[SUMMARY] 11 run, 11 passed, 0 failed`，完成后恢复禁用。测试只覆盖 Registry 显式顺序、内存 Storage、ProfileStore 异常与跨会话更新防护、快速重进加载和 Remote 基础契约，不能代替 ProfileStore 跨重进验收。
 
 ## 9. 常见问题先查哪里
 
@@ -196,8 +201,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ## 11. 推荐掌握顺序
 
 1. `default.project.json`：先明白文件为何会出现在 Studio 的不同服务中。
-2. `Main.server.lua`、`ServiceRegistry.lua`、`ServiceList.lua`：明白 Server 如何启动。
-3. `Main.client.lua`、`ControllerRegistry.lua`、`ControllerList.lua`：明白 Client 如何启动。
+2. `Main.server.lua`、`ServiceRegistry.lua`、`ServiceList.lua`、`GameServiceList.lua`：明白 Server 如何组合并启动两类 Service。
+3. `Main.client.lua`、`ControllerRegistry.lua`、`ControllerList.lua`、`GameControllerList.lua`：明白 Client 如何组合并启动两类 Controller。
 4. `NetService.lua`、`NetClient.lua`、`NetResult.lua`：明白请求边界。
 5. `StorageService.lua`、`StorageConfig.lua`：明白数据读写与就绪。
 6. `ResourceService.lua` 与两个 `Resources` 目录：明白模板可见性。
