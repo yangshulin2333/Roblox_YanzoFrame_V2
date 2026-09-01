@@ -46,9 +46,11 @@ Roblox Studio 中的服务与模板
 | 路径 | 放什么 | 不要放什么 |
 | --- | --- | --- |
 | `src/ReplicatedStorage/Framework` | 可复用底座：网络、日志、存档接口、纯工具 | 游戏的鞋子 ID、价格、胜利数 |
+| `src/ReplicatedStorage/Game/Shared/Config/Generated` | Excel 生成的 Shared 配置 | Server-only 数值、手写业务逻辑 |
 | `src/ReplicatedStorage/Module/Shared/Config` | 当前项目配置与默认存档结构 | 玩家运行时数据 |
 | `src/ServerScriptService/Server/Framework/Services` | Server 生命周期、存档、网络、资源 | 具体游戏玩法 Service |
 | `src/ServerScriptService/Server/Game` | 具体游戏 Service 和显式 `GameServiceList` | 通用框架底座 |
+| `src/ServerScriptService/Server/Game/Config/Generated` | Excel 生成的 Server-only 配置 | Client 可以读取的数据 |
 | `src/StarterPlayer/StarterPlayerScripts/Client/Game` | 具体游戏 Controller 和显式 `GameControllerList` | 真实奖励、存档写入 |
 | `src/ServerStorage/Resources` | 玩家永远不应直接看到的模型模板 | 已放进地图的展示副本 |
 | `src/ReplicatedStorage/Resources/UI` | Client 需要克隆的 UI 模板 | 服务器私有模型 |
@@ -157,6 +159,22 @@ src/ReplicatedStorage/Resources/UI/
 
 ## 8. 每次开发的固定操作
 
+### 策划修改 Excel 后
+
+首次使用先安装隔离依赖：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Setup-ConfigTool.ps1
+```
+
+以后每次修改 `design/GameConfig.xlsx` 后运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Import-GameConfig.ps1
+```
+
+只有全部 Sheet、中文释义、英文键名、类型、范围、枚举和引用都通过后，工具才会替换旧的 `Generated` 目录。失败时旧 Luau 保持不变。
+
 ### 启动同步
 
 ```powershell
@@ -176,6 +194,7 @@ cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2
 & "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src tests
 & "$env:USERPROFILE\.rokit\bin\selene.exe" src tests
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ConfigTool.ps1
 ```
 
 最后在 Studio Play 验收实际链路。静态检查通过只说明代码和 Rojo 映射可用，不等于 UI、模型、存档体验都正确。
@@ -212,3 +231,4 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 - `docs/V2最小框架边界_MinimumFrameworkScope.md`：V2 保留与不保留什么。
 - `docs/StorageModule使用规则_StorageModuleUsage.md`：存档 API 的详细规则。
 - `docs/ResourceModule使用规则_ResourceModuleUsage.md`：资源目录和查找规则。
+- `docs/Excel配置工作流_ExcelConfigWorkflow.md`：Excel 双表头、生成和错误处理规则。

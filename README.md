@@ -8,7 +8,7 @@
 
 ## 当前定位
 
-`YanzoFrame_V0` 已冻结。本项目以 V2.1 StorageModule 为稳定基线，当前阶段只分离 `Framework` 与 `Game` 的注册入口。
+`YanzoFrame_V0` 已冻结。本项目以 V2.1 StorageModule 为稳定基线，当前开发分支已分离 `Framework` / `Game`，并加入策划使用的 Excel Config 构建工具。
 
 当前仍保留 V0 的最小底座能力：
 
@@ -20,6 +20,7 @@
 - NetService / NetClient
 - MemoryStorage / ProfileStoreStorage / StorageService
 - Framework/Game 显式 Service 与 Controller 列表
+- 双表头 Excel Config 校验与 Luau 生成
 
 当前版本是 `StorageModule V1.1`：`MemoryStorage` 用于测试，`ProfileStoreStorage` 通过 ProfileStore 保存正式玩家档案。
 
@@ -33,7 +34,7 @@
 - 自制原生 DataStore 适配器
 - 数据迁移
 - 批量数据维护
-- JSON / Excel 导入导出
+- Roblox 运行时读取 Excel、JSON 或 CSV
 - 商店系统
 - 背包系统
 - 敌人系统
@@ -45,14 +46,16 @@
 | 路径 | 作用 |
 |---|---|
 | `src/ReplicatedStorage/Framework` | 可复用底座代码 |
+| `src/ReplicatedStorage/Game/Shared/Config/Generated` | Excel 生成的客户端可读 Game Config |
 | `src/ReplicatedStorage/Module` | 当前模块自己的配置和共享数据 |
 | `src/ServerScriptService/Server/Framework` | 通用服务端底座 |
-| `src/ServerScriptService/Server/Game` | 具体项目的 Service 注册入口 |
+| `src/ServerScriptService/Server/Game` | 具体项目的 Service 注册入口和 Server-only Config |
 | `src/StarterPlayer/StarterPlayerScripts/Client/Framework` | 通用客户端底座 |
 | `src/StarterPlayer/StarterPlayerScripts/Client/Game` | 具体项目的 Controller 注册入口 |
 | `tests` | 仅服务器可见的最小行为测试；默认不自动运行 |
 | `docs` | 学习规则和模块设计文档 |
 | `scripts` | 本地验证脚本 |
+| `design` | 策划编辑的 Excel 与程序维护的 Schema |
 
 ## 常用命令
 
@@ -65,6 +68,21 @@ rokit install
 & "$env:USERPROFILE\.rokit\bin\rojo.exe" build default.project.json --output "$env:TEMP\YanzoFrame_V2.rbxlx"
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 ```
+
+首次使用 Excel Config 工具：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Setup-ConfigTool.ps1
+```
+
+策划修改 `design/GameConfig.xlsx` 后执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Import-GameConfig.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ConfigTool.ps1
+```
+
+Excel 固定使用两层表头：第 1 行是中文释义，第 2 行是英文键名，第 3 行起才是数据。完整规则见 `docs/Excel配置工作流_ExcelConfigWorkflow.md`。
 
 不要直接依赖 `stylua`、`selene`、`rojo` 或 `wally` 的裸命令。Windows PATH 可能优先命中 Cargo 或其他全局版本；本项目以 `rokit.toml` 和 `$env:USERPROFILE\.rokit\bin` 中的工具作为唯一验证入口。
 

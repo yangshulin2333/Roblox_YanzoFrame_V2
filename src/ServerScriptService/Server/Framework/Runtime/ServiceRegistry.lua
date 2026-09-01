@@ -7,6 +7,7 @@ local Lifecycle = require(ReplicatedStorage.Framework.Shared.App.Lifecycle)
 local ServiceRegistry = {}
 ServiceRegistry.__index = ServiceRegistry
 
+-- Registry 只接收 Main 组合好的显式列表，不负责扫描目录。
 function ServiceRegistry.new(services)
 	if type(services) ~= "table" then
 		error("services must be a table", 2)
@@ -36,7 +37,7 @@ function ServiceRegistry:Init()
 
 	Logger.Debug("ServiceRegistry", "初始化开始")
 
-	-- 必须先注册所有服务，否则在调用 Init 时，服务之间的依赖关系可能无法满足。所以，先注册服务，再调用 Init 方法。
+	-- 先注册全部服务，再按顺序 Init，保证服务初始化时能查到彼此。
 	for _, service in ipairs(self._services) do
 		Lifecycle.AssertModule(service, "Service")
 
@@ -44,11 +45,10 @@ function ServiceRegistry:Init()
 			error("Duplicate service name: " .. service.Name, 2)
 		end
 
-		self._servicesByName[service.Name] = service --用 service.Name 作为 key，service 这张服务表作为 value，存进 registry._servicesByName service 就是服务表，ServiceList 里 require 的每个服务模块返回的表。
+		self._servicesByName[service.Name] = service
 		Logger.Debug("ServiceRegistry", "注册了 " .. service.Name)
 	end
 
-	--第二轮，调用每个服务的 Init 方法，传入 context 上下文表。
 	for _, service in ipairs(self._services) do
 		if service.Init ~= nil then
 			Logger.Debug("ServiceRegistry", "初始化 " .. service.Name)
@@ -71,10 +71,11 @@ function ServiceRegistry:Start()
 
 	Logger.Debug("ServiceRegistry", "启动开始")
 
+	-- Start 保持 Main 传入的显式顺序。
 	for _, service in ipairs(self._services) do
 		if service.Start ~= nil then
 			Logger.Debug("ServiceRegistry", "启动 " .. service.Name)
-			service:Start() --循环调用每个服务的 Start 方法，启动服务。
+			service:Start()
 		end
 	end
 

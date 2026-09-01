@@ -9,7 +9,7 @@ local NetClient = require(ReplicatedStorage.Framework.Shared.Net.NetClient)
 local ControllerRegistry = {}
 ControllerRegistry.__index = ControllerRegistry
 
---创建一张self实例表并返回这张表
+-- Registry 只接收 Main 组合好的显式列表，不负责扫描目录。
 function ControllerRegistry.new(controllers)
 	if type(controllers) ~= "table" then
 		error("controllers must be a table", 2)
@@ -39,7 +39,7 @@ function ControllerRegistry:Init()
 
 	Logger.Debug("ControllerRegistry", "初始化开始")
 
-	--按顺序遍历ControllerList 数组表，存入 _controllersByName 字典表，键是控制器的 Name，值是控制器本身
+	-- 先注册全部控制器，再按顺序 Init，保证控制器初始化时能查到彼此。
 	for _, controller in ipairs(self._controllers) do
 		Lifecycle.AssertModule(controller, "Controller")
 
@@ -51,12 +51,10 @@ function ControllerRegistry:Init()
 		Logger.Debug("ControllerRegistry", "已注册控制器: " .. controller.Name)
 	end
 
-	--按顺序继续遍历数据表，调用每个控制器的 Init 方法，传入上下文
-	--self._context 是写在 ControllerRegistry:Init() 里，即self = registry。
 	for _, controller in ipairs(self._controllers) do
 		if controller.Init ~= nil then
 			Logger.Debug("ControllerRegistry", "正在初始化: " .. controller.Name)
-			controller:Init(self._context) --调用各个控制器的Init方法，传入上下文
+			controller:Init(self._context)
 		end
 	end
 
@@ -75,6 +73,7 @@ function ControllerRegistry:Start()
 
 	Logger.Debug("ControllerRegistry", "Start begin")
 
+	-- Start 保持 Main 传入的显式顺序。
 	for _, controller in ipairs(self._controllers) do
 		if controller.Start ~= nil then
 			Logger.Debug("ControllerRegistry", "Start " .. controller.Name)

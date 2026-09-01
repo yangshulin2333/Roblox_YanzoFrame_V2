@@ -40,6 +40,8 @@ try {
 
     $requiredFiles = @(
         "default.project.json",
+        "design/GameConfig.xlsx",
+        "design/config-schema.json",
         "wally.toml",
         "wally.lock",
         $profileStorePath,
@@ -47,6 +49,9 @@ try {
         "src/StarterPlayer/StarterPlayerScripts/Client/Main.client.lua",
         "src/ServerScriptService/Server/Framework/Runtime/ServiceRegistry.lua",
         "src/ServerScriptService/Server/Game/Runtime/GameServiceList.lua",
+        "src/ServerScriptService/Server/Game/Config/Generated/ServerSettings.lua",
+        "src/ReplicatedStorage/Game/Shared/Config/Generated/ExampleGroups.lua",
+        "src/ReplicatedStorage/Game/Shared/Config/Generated/ExampleItems.lua",
         "src/StarterPlayer/StarterPlayerScripts/Client/Framework/Runtime/ControllerRegistry.lua",
         "src/StarterPlayer/StarterPlayerScripts/Client/Game/Runtime/GameControllerList.lua",
         "src/ServerScriptService/Server/Framework/Services/NetService.lua",
@@ -101,6 +106,12 @@ try {
     }
     if ($buildContent -notmatch '<string name="Name">GameControllerList</string>') {
         throw "Rojo 构建中缺少 GameControllerList"
+    }
+    if ($buildContent -notmatch '<string name="Name">ExampleItems</string>') {
+        throw "Rojo 构建中缺少 Shared Excel Config"
+    }
+    if ($buildContent -notmatch '<string name="Name">ServerSettings</string>') {
+        throw "Rojo 构建中缺少 Server-only Excel Config"
     }
 
     Write-Host "MODULE_BASE_CHECK_OK"

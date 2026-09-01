@@ -18,6 +18,7 @@ V2 的目标不是“预先准备所有游戏系统”，而是让新项目能�
 | 资源 | `ServerStorage.Resources`、`ReplicatedStorage.Resources`、`ResourceService` | 区分服务器模板、客户端可读模板和运行时副本。 |
 | 纯工具 | `TableUtil.DeepCopy` | 已有多处真实调用，且不依赖 Roblox 生命周期。 |
 | UI 模板 | `Resources.UI`、每个 GUI 自己的 Controller | 已解决模板来源和运行时 `PlayerGui` 副本的职责问题。 |
+| 配置构建 | 双表头 Excel、Schema、Luau 生成工具 | 三人团队已有策划直接调数需求；工具只在本地运行，不进入 Roblox 运行时。 |
 
 ## 当前明确不加入
 
@@ -29,7 +30,7 @@ V2 的目标不是“预先准备所有游戏系统”，而是让新项目能�
 | 全局 `InitContext` 类型系统 | 至少第二个 Service 出现相同的局部类型需求后，重新评估 YF-008。 |
 | 通用 Accessory 挂载服务 | 至少第二种饰品完成同样的服务器挂载与重生验证后，重新评估 YF-010。 |
 | 资源商城、资源 ID 表、自动下载或导入 | 游戏或制作工具职责，不属于运行时基础框架。 |
-| 数据迁移、批量运维、Excel/JSON 导入导出 | 当前没有真实维护需求，不预先实现。 |
+| 数据迁移、批量运维、运行时 Excel/JSON/CSV 读取 | 当前没有真实维护需求，不预先实现。 |
 | Controller 全部并行启动 | 先由具体项目证明同步启动造成重复阻塞问题，再处理 YF-004。 |
 
 ## 新能力进入 V2 的五个门槛
@@ -55,3 +56,5 @@ V2 的目标不是“预先准备所有游戏系统”，而是让新项目能�
 ## 当前结论
 
 V2 只保留已确认的通用能力。具体玩法通过 `Game` 列表接入，不进入 `Framework`；下一次修改仍需先明确真实证据、范围、验收方式和不做项。
+
+Excel Config 属于开发期构建工具：策划编辑 Excel，程序维护 Schema，生成器输出 Shared 或 Server-only Luau。它不新增 Service，不依赖 Storage，也不随游戏运行。

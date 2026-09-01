@@ -7,6 +7,9 @@
       "Framework": {
         "$path": "src/ReplicatedStorage/Framework"
       },
+      "Game": {
+        "$path": "src/ReplicatedStorage/Game"
+      },
       "Module": {
         "$path": "src/ReplicatedStorage/Module"
       },

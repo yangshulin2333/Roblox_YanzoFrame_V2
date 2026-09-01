@@ -11,6 +11,7 @@
 - 保持 V0 底座结构可理解、可验证。
 - 保持 StorageModule V1.1 的稳定边界。
 - 让 `Framework` 与具体项目的 `Game` 代码明确分离。
+- 让策划通过双表头 Excel 编辑 Config，由本地工具校验并生成 Luau。
 - 每次只推进一个清晰的小阶段。
 - 模块要能单独理解、单独验证、单独接入别的 Roblox 项目。
 
@@ -50,8 +51,9 @@
 - 自制原生 DataStore 适配器
 - 数据迁移
 - 批量维护
-- JSON / Excel 导入导出
 - 业务字段，例如 Coins、Items、Shop、Inventory
+
+Excel Config 是仓库外的构建工具，不进入 Storage 或 Roblox 运行时。Shared 和 Server 生成目录必须分离，生成文件不能手改。
 
 业务服务只能依赖 `StorageService`，不能直接依赖 `MemoryStorage`、`ProfileStoreStorage` 或 `ProfileStore`。
 `Get` 只能读取已经打开的数据；只有 `Open` 可以加载或创建默认数据。`Close` 表示保存并释放会话，不表示删除永久数据。
@@ -84,6 +86,7 @@
 & "$env:USERPROFILE\.rokit\bin\stylua.exe" --check src tests
 & "$env:USERPROFILE\.rokit\bin\selene.exe" src tests
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ConfigTool.ps1
 ```
 
 不得依赖 Windows PATH 中的同名裸命令。项目工具版本以 `rokit.toml` 为准；新机器先在项目根目录执行 `rokit install`。

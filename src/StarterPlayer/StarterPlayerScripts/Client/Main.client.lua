@@ -4,6 +4,7 @@ local ControllerRegistry = require(script.Parent.Framework.Runtime.ControllerReg
 local FrameworkControllerList = require(script.Parent.Framework.Runtime.ControllerList)
 local GameControllerList = require(script.Parent.Game.Runtime.GameControllerList)
 
+-- Framework 先加入，Game 后加入；这里的顺序就是后续 Init 和 Start 的顺序。
 local controllers = {}
 for _, controller in ipairs(FrameworkControllerList) do
 	table.insert(controllers, controller)

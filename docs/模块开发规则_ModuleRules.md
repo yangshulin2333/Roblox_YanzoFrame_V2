@@ -73,6 +73,14 @@ Config 是配置表。
 
 例如金币初始值、物品价格、等级经验，都应该放在配置表里。逻辑代码只读取配置，不把数值写死在函数中。
 
+策划使用的 Excel 固定采用：
+
+1. 第 1 行写每个字段的中文释义。
+2. 第 2 行写程序使用的英文键名。
+3. 第 3 行起写数据。
+
+中文释义和英文键名必须与 `design/config-schema.json` 一致。策划只编辑 Excel 数据；程序或 Codex 维护 Schema；`Generated` 下的 Luau 不能手改。
+
 ## Remote 规则
 
 - Client 可以请求 Server。
