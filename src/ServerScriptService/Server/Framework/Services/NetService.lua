@@ -1,10 +1,12 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 
 local NetResult = require(ReplicatedStorage.Framework.Shared.Net.NetResult) --统一返回格式
 local RemoteGuards = require(ReplicatedStorage.Framework.Shared.Net.RemoteGuards) --Guards 指校验、防护、拦截规则。检查 Remote 名字是否合法
 local RemoteNames = require(ReplicatedStorage.Framework.Shared.Net.RemoteNames) --Remote 文件夹名和请求名
+local RemoteRateLimiter = require(script.Parent.Parent.Net.RemoteRateLimiter)
 
 local NetService = {
 	Name = "NetService",
@@ -26,6 +28,8 @@ NetService._clientEventFolder = nil
 NetService._serverEventFolder = nil
 NetService._requestHandlers = {}
 NetService._eventHandlers = {}
+NetService._requestRateLimiter = nil
+NetService._playerRemovingConnection = nil
 
 --传入一个父对象和一个文件夹名，返回这个文件夹的引用。
 local function getOrCreateFolder(parent, folderName)
@@ -77,6 +81,16 @@ end
 
 function NetService:Init(context)
 	self._logger = context.Logger
+	self._requestHandlers = {}
+	self._eventHandlers = {}
+	self._requestRateLimiter = RemoteRateLimiter.new()
+
+	if self._playerRemovingConnection ~= nil then
+		self._playerRemovingConnection:Disconnect()
+	end
+	self._playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
+		self._requestRateLimiter:ClearPlayer(player)
+	end)
 
 	local root = getOrCreateFolder(ReplicatedStorage, RemoteNames.RootFolder) --创建一个 YanzoFrame_V2_Remotes 文件夹在 ReplicatedStorage 下面
 	local clientToServer = getOrCreateFolder(root, RemoteNames.ClientToServerFolder) --创建一个 ClientToServer 文件夹在 YanzoFrame_V2_Remotes 下面
@@ -114,7 +128,8 @@ function NetService:Start()
 				PlayerUserId = player.UserId,
 				ServerTime = os.time(),
 			}
-		end
+		end,
+		1
 	)
 
 	self._logger.Info(self.Name, "Remote boundary ready")
@@ -169,7 +184,7 @@ end
 		-> 服务端 _handleRequest 返回 NetResult.Ok({ PlayerUserId = player.UserId, ServerTime = os.time() })
 		-> Roblox 把这个结果返回给客户端
 		]]
-function NetService:RegisterRequest(remoteName, handler) --"Framework.Ping", 匿名函数
+function NetService:RegisterRequest(remoteName, handler, cooldownSeconds) --"Framework.Ping", 匿名函数, 1
 	RemoteGuards.AssertRemoteName(remoteName, "remoteName") --调用AssertRemoteName函数 检查 remoteName 是否符合规则
 
 	if type(handler) ~= "function" then
@@ -180,6 +195,8 @@ function NetService:RegisterRequest(remoteName, handler) --"Framework.Ping", 匿
 	if self._requestHandlers[remoteName] ~= nil then
 		error("请求已注册: " .. remoteName, 2)
 	end
+	self._requestRateLimiter:SetCooldown(remoteName, cooldownSeconds)
+
 	--在 ClientToServer/Requests 下面找到或创建一个叫 Framework.Ping 的 RemoteFunction。
 	local remote = getOrCreateRemoteFunction(self:GetRequestFolder(), remoteName)
 	self._requestHandlers[remoteName] = handler --NetService._requestHandlers["Framework.Ping"] = 匿名函数
@@ -278,6 +295,14 @@ end
 
 --统一处理 pcall 防崩溃，错误日志，统一 NetResult 返回格式
 function NetService:_handleRequest(remoteName, handler, player, payload)
+	local allowed, retryAfterSeconds = self._requestRateLimiter:TryAcquire(player, remoteName)
+	if not allowed then
+		return NetResult.Err("RATE_LIMITED", "Request rate limited", {
+			RemoteName = remoteName,
+			RetryAfterSeconds = retryAfterSeconds,
+		})
+	end
+
 	--[[
 		pcall(要执行的函数, 参数1, 参数2, 参数3...)
 			所以：

@@ -107,7 +107,7 @@ end
 ### Server：注册请求并校验
 
 1. 在 `RemoteNames.lua` 增加一个名字，例如 `JumpGame.ClaimReward`。
-2. 在业务 Service 的 `Start()` 中调用 `NetService:RegisterRequest`。
+2. 在业务 Service 的 `Start()` 中调用 `NetService:RegisterRequest`，并为该请求设置冷却秒数。
 3. 在 handler 内校验玩家、条件和数据，再调用业务 Service 修改存档。
 
 ```lua
@@ -124,9 +124,11 @@ function RewardService:Start()
         end
 
         return NetResult.Ok({ Reward = result })
-    end)
+    end, 1)
 end
 ```
+
+第三个参数 `1` 表示：同一个玩家在 1 秒内重复调用同一个 Remote 时，Server 不执行 handler，而是返回 `RATE_LIMITED`。不同玩家或不同 Remote 的冷却互不影响。冷却秒数必须是大于 0 的有限数字；玩家离开时，框架会清除该玩家的限流状态。
 
 ### Client：发送意图并显示结果
 

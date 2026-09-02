@@ -18,6 +18,7 @@
 - ServiceRegistry
 - ControllerRegistry
 - NetService / NetClient
+- 按玩家、按 Remote 的服务器请求冷却
 - MemoryStorage / ProfileStoreStorage / StorageService
 - Framework/Game 显式 Service 与 Controller 列表
 - 三行表头 Excel Config 校验与 Luau 生成
@@ -148,9 +149,10 @@ ScopeLevels = {
 - `StorageService` 在同一 UserId 快速重进时接管已经结束的旧加载，不会永久停在 `LOADING`。
 - `RemoteGuards` 拒绝非法 Remote 名称。
 - `NetResult` 保持统一成功/失败结构。
+- `NetService` 对重复请求返回稳定的 `RATE_LIMITED`，并隔离不同玩家与 Remote 的冷却状态。
 - Registry 使用调用方传入的显式列表，并保持 Init/Start 顺序。
 
-需要运行时，临时启用 `UnitTestRunner` 后 Play；看到 `[SUMMARY] 11 run, 11 passed, 0 failed` 即通过，完成后恢复禁用。玩家存档跨重进仍属于单独的 Studio 人工验收，不由这组内存测试代替。本稳定版已在开启 API Services 的 Studio Place 中完成一次“写入临时值 -> 重进读回 -> 恢复原值 -> 再次重进确认”的验收；更换 Place、存档名或 Schema 后仍需重新验收。
+需要运行时，临时启用 `UnitTestRunner` 后 Play；看到 `[SUMMARY] 15 run, 15 passed, 0 failed` 即通过，完成后恢复禁用。玩家存档跨重进仍属于单独的 Studio 人工验收，不由这组内存测试代替。本稳定版已在开启 API Services 的 Studio Place 中完成一次“写入临时值 -> 重进读回 -> 恢复原值 -> 再次重进确认”的验收；更换 Place、存档名或 Schema 后仍需重新验收。
 
 ## Git 简化命令
 

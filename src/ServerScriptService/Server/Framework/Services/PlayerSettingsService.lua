@@ -33,7 +33,7 @@ function PlayerSettingsService:Start()
 		return {
 			Language = language,
 		}
-	end)
+	end, 0.5)
 
 	netService:RegisterRequest(RemoteNames.PlayerSettingsSetLanguage, function(player, payload)
 		if type(payload) ~= "table" or type(payload.Language) ~= "string" then
@@ -49,7 +49,7 @@ function PlayerSettingsService:Start()
 		return {
 			Language = self:GetLanguage(player),
 		}
-	end)
+	end, 1)
 end
 
 function PlayerSettingsService:_getStorageService()
