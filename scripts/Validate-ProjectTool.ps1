@@ -9,6 +9,9 @@ $ProjectName = "ProjectToolCheck"
 $Destination = Join-Path $TestRoot $ProjectName
 $PreviewDestination = Join-Path $TestRoot "PreviewOnly"
 $DirtyDestination = Join-Path $TestRoot "DirtyRejected"
+$RaceProjectName = "RaceCollision"
+$RaceDestination = Join-Path $TestRoot $RaceProjectName
+$RaceSentinel = Join-Path $RaceDestination "external-owner.txt"
 $DirtyMarker = Join-Path $Root (".yanzo-project-tool-dirty-" + [Guid]::NewGuid().ToString("N"))
 $ExpectedRemoteRoot = "ProjectToolCheck_Remotes"
 $ExpectedProfileStore = "ProjectToolCheck_PlayerData_V1"
@@ -81,6 +84,70 @@ try {
     Assert-Equal -Actual $LASTEXITCODE -Expected 0 -Message "WhatIf command failed"
     Assert-True -Condition (-not (Test-Path -LiteralPath $PreviewDestination)) -Message "WhatIf created destination"
 
+    Write-Host "[Validate-ProjectTool] 验证运行中出现的目标目录不会被删除"
+    $raceCreatorJob = Start-Job -ScriptBlock {
+        param(
+            [string]$ParentPath,
+            [string]$DestinationLeaf,
+            [string]$DestinationPath,
+            [string]$SentinelPath
+        )
+
+        $stagePattern = ".${DestinationLeaf}.yanzo-stage-*"
+        $deadline = [DateTime]::UtcNow.AddSeconds(30)
+        while ([DateTime]::UtcNow -lt $deadline) {
+            $stage = Get-ChildItem -LiteralPath $ParentPath -Directory -Filter $stagePattern -ErrorAction SilentlyContinue |
+                Select-Object -First 1
+            if ($null -ne $stage) {
+                New-Item -ItemType Directory -Path $DestinationPath | Out-Null
+                [System.IO.File]::WriteAllText($SentinelPath, "external owner")
+                return "RACE_DESTINATION_CREATED"
+            }
+            Start-Sleep -Milliseconds 10
+        }
+
+        throw "RACE_STAGE_WAIT_TIMEOUT"
+    } -ArgumentList $TestRoot, $RaceProjectName, $RaceDestination, $RaceSentinel
+
+    $previousErrorAction = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $raceOutput = & $PowerShellExe `
+            -NoProfile `
+            -ExecutionPolicy Bypass `
+            -File $Generator `
+            -ProjectName $RaceProjectName `
+            -Destination $RaceDestination `
+            -AllowDirty 2>&1
+        $raceExitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousErrorAction
+        $raceJobCompleted = Wait-Job -Job $raceCreatorJob -Timeout 35
+        if ($null -eq $raceJobCompleted) {
+            Stop-Job -Job $raceCreatorJob
+        }
+        $raceJobOutput = @(Receive-Job -Job $raceCreatorJob)
+        Remove-Job -Job $raceCreatorJob -Force
+    }
+
+    Assert-True `
+        -Condition (($raceJobOutput -join "`n") -match "RACE_DESTINATION_CREATED") `
+        -Message "race destination creator did not run"
+    Assert-True -Condition ($raceExitCode -ne 0) -Message "race collision was not rejected"
+    Assert-True `
+        -Condition (Test-Path -LiteralPath $RaceDestination -PathType Container) `
+        -Message "external race destination was deleted"
+    Assert-True `
+        -Condition (Test-Path -LiteralPath $RaceSentinel -PathType Leaf) `
+        -Message "external race sentinel was deleted"
+    $nestedRaceStages = @(
+        Get-ChildItem -LiteralPath $RaceDestination -Directory -Filter ".${RaceProjectName}.yanzo-stage-*" -ErrorAction SilentlyContinue
+    )
+    Assert-Equal -Actual $nestedRaceStages.Count -Expected 0 -Message "staging directory was merged into external destination"
+    Assert-True `
+        -Condition (($raceOutput -join "`n") -match "PROJECT_DESTINATION_EXISTS") `
+        -Message "race collision error code missing"
+
     Write-Host "[Validate-ProjectTool] 创建并完整验证临时项目"
     & $PowerShellExe `
         -NoProfile `
@@ -126,6 +193,7 @@ try {
     }
 
     foreach ($excludedPath in @(
+        ".yanzo-project-owner",
         ".codex",
         ".codegraph",
         "codegraph.json",

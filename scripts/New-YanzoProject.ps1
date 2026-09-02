@@ -21,6 +21,7 @@ $ErrorActionPreference = "Stop"
 
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $SourceRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+$OwnershipMarkerName = ".yanzo-project-owner"
 
 function Write-Step {
     param([string]$Text)
@@ -49,6 +50,24 @@ function Write-Utf8Text {
     )
 
     [System.IO.File]::WriteAllText($Path, $Content, $Utf8NoBom)
+}
+
+function Test-OwnershipMarker {
+    param(
+        [string]$RootPath,
+        [string]$ExpectedToken
+    )
+
+    $markerPath = Join-Path $RootPath $OwnershipMarkerName
+    if (-not (Test-Path -LiteralPath $markerPath -PathType Leaf)) {
+        return $false
+    }
+
+    try {
+        return [System.IO.File]::ReadAllText($markerPath) -eq $ExpectedToken
+    } catch {
+        return $false
+    }
 }
 
 function Set-LuaStringValue {
@@ -290,6 +309,9 @@ if (-not $PSCmdlet.ShouldProcess($DestinationPath, "创建并验证独立 YanzoF
 }
 
 $StageRoot = Join-Path $DestinationParent ("." + $DestinationLeaf + ".yanzo-stage-" + [Guid]::NewGuid().ToString("N"))
+$OwnershipToken = [Guid]::NewGuid().ToString("N")
+$StageOwnershipMarker = Join-Path $StageRoot $OwnershipMarkerName
+$DestinationOwnershipMarker = Join-Path $DestinationPath $OwnershipMarkerName
 $DestinationCreatedByScript = $false
 
 try {
@@ -303,6 +325,7 @@ try {
 
     Write-Step "复制允许的模板文件"
     New-Item -ItemType Directory -Path $StageRoot | Out-Null
+    Write-Utf8Text -Path $StageOwnershipMarker -Content $OwnershipToken
     foreach ($entry in $TemplateEntries) {
         Copy-TemplateEntry -RelativePath $entry -TargetRoot $StageRoot
     }
@@ -311,7 +334,14 @@ try {
     Set-ProjectIdentity -ProjectRoot $StageRoot
 
     Write-Step "形成最终项目目录"
-    Move-Item -LiteralPath $StageRoot -Destination $DestinationPath
+    try {
+        [System.IO.Directory]::Move($StageRoot, $DestinationPath)
+    } catch {
+        if (Test-Path -LiteralPath $DestinationPath) {
+            throw "PROJECT_DESTINATION_EXISTS: $DestinationPath"
+        }
+        throw
+    }
     $DestinationCreatedByScript = $true
 
     Initialize-GeneratedProject `
@@ -320,14 +350,20 @@ try {
         -PythonPath $PythonPath `
         -RokitToolRoot $RokitBin
 
+    if (-not (Test-OwnershipMarker -RootPath $DestinationPath -ExpectedToken $OwnershipToken)) {
+        throw "PROJECT_OWNERSHIP_MARKER_MISSING: $DestinationPath"
+    }
+    Remove-Item -LiteralPath $DestinationOwnershipMarker -Force
+
     Write-Host "NEW_PROJECT_OK | Project=$ProjectName | Path=$DestinationPath"
 } catch {
     $message = $_.Exception.Message
 
-    if (Test-Path -LiteralPath $StageRoot) {
+    if (Test-OwnershipMarker -RootPath $StageRoot -ExpectedToken $OwnershipToken) {
         Remove-Item -LiteralPath $StageRoot -Recurse -Force
     }
-    if ($DestinationCreatedByScript -and (Test-Path -LiteralPath $DestinationPath)) {
+    if ($DestinationCreatedByScript -and
+        (Test-OwnershipMarker -RootPath $DestinationPath -ExpectedToken $OwnershipToken)) {
         Remove-Item -LiteralPath $DestinationPath -Recurse -Force
     }
 

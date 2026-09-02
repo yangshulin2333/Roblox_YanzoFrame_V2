@@ -67,7 +67,7 @@
 .\scripts\New-Game.ps1 "WoodenMan-123"
 ```
 
-脚本会把显示名 `WoodenMan-123` 自动转换为内部标识 `WoodenMan_123`，在框架母版旁边创建同名目录，并推导 Remote 根目录名与 ProfileStore 名。确认摘要后，它会创建独立目录，将未发布项目的开发存储设为 `Memory`，安装依赖，运行 Config 与模块验证，并初始化无 Commit、无 Remote 的本地 Git 仓库。目标目录已经存在时会停止，不会覆盖。
+脚本会把显示名 `WoodenMan-123` 自动转换为内部标识 `WoodenMan_123`，在框架母版旁边创建同名目录，并推导 Remote 根目录名与 ProfileStore 名。确认摘要后，它会创建独立目录，将未发布项目的开发存储设为 `Memory`，安装依赖，运行 Config 与模块验证，并初始化无 Commit、无 Remote 的本地 Git 仓库。最终目录使用原子移动创建；即使其他程序在生成过程中创建了同名目录，脚本也会停止，不会合并、覆盖或删除外部目录。
 
 只预览、不创建时追加 `-WhatIf`；自动化调用需要跳过确认时追加 `-Yes`。源模板存在未提交改动时，脚本默认停止；确实要复制当前未提交状态时必须显式追加 `-AllowDirty`。需要自定义内部标识或目标路径时，仍可直接使用底层 `New-YanzoProject.ps1`。
 
