@@ -4,6 +4,8 @@
 return function(testContext)
 	local NetResult = require(game.ReplicatedStorage.Framework.Shared.Net.NetResult)
 	local RemoteGuards = require(game.ReplicatedStorage.Framework.Shared.Net.RemoteGuards)
+	local RemoteRateLimiter = require(game.ServerScriptService.Server.Framework.Net.RemoteRateLimiter)
+	local NetService = require(game.ServerScriptService.Server.Framework.Services.NetService)
 	local expect = testContext.expect
 
 	-- 合法名称保持不变，可安全作为 Remote 实例名。
@@ -36,5 +38,38 @@ return function(testContext)
 		expect.truthy(NetResult.IsResult(success))
 		expect.truthy(NetResult.IsResult(failure))
 		expect.falsy(NetResult.IsResult({}))
+	end)
+
+	-- NetService 必须在重复请求进入业务 handler 前返回稳定的 RATE_LIMITED。
+	testContext.test("returns RATE_LIMITED before a repeated handler runs", function()
+		local now = 10
+		local limiter = RemoteRateLimiter.new(function()
+			return now
+		end)
+		limiter:SetCooldown("Game.Test", 1)
+
+		local service = setmetatable({
+			_requestRateLimiter = limiter,
+			_logger = {
+				Warn = function() end,
+			},
+		}, {
+			__index = NetService,
+		})
+		local player = {}
+		local handlerCalls = 0
+		local function handler()
+			handlerCalls += 1
+			return { Value = handlerCalls }
+		end
+
+		local first = service:_handleRequest("Game.Test", handler, player, {})
+		local repeated = service:_handleRequest("Game.Test", handler, player, {})
+
+		expect.truthy(first.Ok)
+		expect.falsy(repeated.Ok)
+		expect.equal(repeated.Code, "RATE_LIMITED")
+		expect.equal(repeated.Data.RemoteName, "Game.Test")
+		expect.equal(handlerCalls, 1)
 	end)
 end

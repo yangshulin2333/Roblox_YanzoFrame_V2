@@ -3,7 +3,11 @@ Set-StrictMode -Version Latest
 
 $Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $Generator = Join-Path $PSScriptRoot "New-YanzoProject.ps1"
-$PowerShellExe = Join-Path $PSHOME "powershell.exe"
+$PowerShellExecutableName = if ($PSVersionTable.PSEdition -eq "Core") { "pwsh.exe" } else { "powershell.exe" }
+$PowerShellExe = Join-Path $PSHOME $PowerShellExecutableName
+if (-not (Test-Path -LiteralPath $PowerShellExe -PathType Leaf)) {
+    throw "PROJECT_TOOL_POWERSHELL_HOST_MISSING: $PowerShellExe"
+}
 $TestRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("YanzoFrame_ProjectTool_Check_" + [Guid]::NewGuid().ToString("N"))
 $ProjectName = "ProjectToolCheck"
 $Destination = Join-Path $TestRoot $ProjectName
@@ -46,6 +50,7 @@ if (-not $normalizedTestRoot.StartsWith($normalizedTemp, [System.StringCompariso
 }
 
 New-Item -ItemType Directory -Path $TestRoot | Out-Null
+Write-Host "[Validate-ProjectTool] 子进程 PowerShell: $PowerShellExe"
 
 try {
     Write-Host "[Validate-ProjectTool] 验证脏模板默认停止"

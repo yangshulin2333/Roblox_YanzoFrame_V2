@@ -152,7 +152,7 @@ ScopeLevels = {
 - `NetService` 对重复请求返回稳定的 `RATE_LIMITED`，并隔离不同玩家与 Remote 的冷却状态。
 - Registry 使用调用方传入的显式列表，并保持 Init/Start 顺序。
 
-需要运行时，临时启用 `UnitTestRunner` 后 Play；看到 `[SUMMARY] 15 run, 15 passed, 0 failed` 即通过，完成后恢复禁用。玩家存档跨重进仍属于单独的 Studio 人工验收，不由这组内存测试代替。本稳定版已在开启 API Services 的 Studio Place 中完成一次“写入临时值 -> 重进读回 -> 恢复原值 -> 再次重进确认”的验收；更换 Place、存档名或 Schema 后仍需重新验收。
+需要运行时，临时启用 `UnitTestRunner` 后 Play；看到 `[SUMMARY] 16 run, 16 passed, 0 failed` 即通过，完成后恢复禁用。玩家存档跨重进仍属于单独的 Studio 人工验收，不由这组内存测试代替。本稳定版已在开启 API Services 的 Studio Place 中完成一次“写入临时值 -> 重进读回 -> 恢复原值 -> 再次重进确认”的验收；更换 Place、存档名或 Schema 后仍需重新验收。
 
 ## Git 简化命令
 

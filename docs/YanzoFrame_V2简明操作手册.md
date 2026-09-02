@@ -203,7 +203,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ConfigTool.ps1
 
 验证脚本只会在 `ServerPackages` 缺失时运行 `wally install`；依赖已存在时会复用当前文件，避免日常验证中断正在运行的 Rojo 服务。修改 `wally.toml` 或 `wally.lock` 后，应先停止 Rojo，再重新安装依赖并启动服务。
 
-需要运行最小行为测试时，临时启用 `ServerScriptService.UnitTestRunner` 后 Play，确认输出为 `[SUMMARY] 11 run, 11 passed, 0 failed`，完成后恢复禁用。测试只覆盖 Registry 显式顺序、内存 Storage、ProfileStore 异常与跨会话更新防护、快速重进加载和 Remote 基础契约，不能代替 ProfileStore 跨重进验收。
+需要运行最小行为测试时，临时启用 `ServerScriptService.UnitTestRunner` 后 Play，确认输出为 `[SUMMARY] 16 run, 16 passed, 0 failed`，完成后恢复禁用。测试只覆盖 Registry 显式顺序、内存 Storage、ProfileStore 异常与跨会话更新防护、快速重进加载、Remote 基础契约和 `RATE_LIMITED` 返回码，不能代替 ProfileStore 跨重进验收。
 
 ## 9. 常见问题先查哪里
 
