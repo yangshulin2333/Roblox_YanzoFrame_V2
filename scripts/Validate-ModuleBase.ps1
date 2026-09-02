@@ -40,8 +40,8 @@ try {
 
     $requiredFiles = @(
         "default.project.json",
-        "design/GameConfig.xlsx",
-        "design/config-schema.json",
+        "design/config/workbooks/GameConfig.xlsx",
+        "design/config/config-schema.json",
         "wally.toml",
         "wally.lock",
         $profileStorePath,

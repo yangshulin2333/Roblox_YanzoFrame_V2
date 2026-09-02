@@ -3,11 +3,13 @@
   "layout": {
     "descriptionRow": 1,
     "keyRow": 2,
-    "dataStartRow": 3
+    "typeRow": 3,
+    "dataStartRow": 4
   },
   "sheets": [
     {
       "name": "ExampleGroups",
+      "workbook": "GameConfig.xlsx",
       "descriptionZh": "Shared 示例分组，用于验证 ID 引用",
       "scope": "Shared",
       "primaryKey": "Id",
@@ -29,6 +31,7 @@
     },
     {
       "name": "ExampleItems",
+      "workbook": "GameConfig.xlsx",
       "descriptionZh": "Shared 示例数据，用于验证常用字段类型",
       "scope": "Shared",
       "primaryKey": "Id",
@@ -81,11 +84,18 @@
           "descriptionZh": "策划备注（可留空，不影响程序逻辑）",
           "type": "string",
           "required": false
+        },
+        {
+          "key": "Tags",
+          "descriptionZh": "标签列表（英文逗号分隔，可留空）",
+          "type": "string[]",
+          "required": false
         }
       ]
     },
     {
       "name": "ServerSettings",
+      "workbook": "GameConfig.xlsx",
       "descriptionZh": "仅服务器可读的示例参数",
       "scope": "Server",
       "primaryKey": "Id",

@@ -167,7 +167,7 @@ src/ReplicatedStorage/Resources/UI/
 powershell -ExecutionPolicy Bypass -File .\scripts\Setup-ConfigTool.ps1
 ```
 
-以后每次修改 `design/GameConfig.xlsx` 后运行：
+以后每次修改 `design/config/workbooks` 中的 Excel 后运行：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\Import-GameConfig.ps1
@@ -231,4 +231,4 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ConfigTool.ps1
 - `docs/V2最小框架边界_MinimumFrameworkScope.md`：V2 保留与不保留什么。
 - `docs/StorageModule使用规则_StorageModuleUsage.md`：存档 API 的详细规则。
 - `docs/ResourceModule使用规则_ResourceModuleUsage.md`：资源目录和查找规则。
-- `docs/Excel配置工作流_ExcelConfigWorkflow.md`：Excel 双表头、生成和错误处理规则。
+- `docs/Excel配置工作流_ExcelConfigWorkflow.md`：Excel 三行表头、多工作簿、生成和错误处理规则。

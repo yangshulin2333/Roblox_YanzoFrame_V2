@@ -77,9 +77,10 @@ Config 是配置表。
 
 1. 第 1 行写每个字段的中文释义。
 2. 第 2 行写程序使用的英文键名。
-3. 第 3 行起写数据。
+3. 第 3 行写字段类型。
+4. 第 4 行起写数据。
 
-中文释义和英文键名必须与 `design/config-schema.json` 一致。策划只编辑 Excel 数据；程序或 Codex 维护 Schema；`Generated` 下的 Luau 不能手改。
+中文释义、英文键名和字段类型必须与 `design/config/config-schema.json` 一致。策划只编辑 Excel 数据；程序或 Codex 维护 Schema；`Generated` 下的 Luau 不能手改。
 
 ## Remote 规则
 

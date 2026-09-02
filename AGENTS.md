@@ -11,7 +11,7 @@
 - 保持 V0 底座结构可理解、可验证。
 - 保持 StorageModule V1.1 的稳定边界。
 - 让 `Framework` 与具体项目的 `Game` 代码明确分离。
-- 让策划通过双表头 Excel 编辑 Config，由本地工具校验并生成 Luau。
+- 让策划通过中文释义、英文字段、字段类型三行表头编辑 Excel Config，由本地工具校验并生成 Luau。
 - 每次只推进一个清晰的小阶段。
 - 模块要能单独理解、单独验证、单独接入别的 Roblox 项目。
 
@@ -53,7 +53,7 @@
 - 批量维护
 - 业务字段，例如 Coins、Items、Shop、Inventory
 
-Excel Config 是仓库外的构建工具，不进入 Storage 或 Roblox 运行时。Shared 和 Server 生成目录必须分离，生成文件不能手改。
+Excel Config 是仓库外的构建工具，不进入 Storage 或 Roblox 运行时。Schema 由程序或 Codex 维护；普通导表会安全补齐缺失工作簿、Sheet 和末尾新字段，但不能移动、删除或覆盖已有数据。Shared 和 Server 生成目录必须分离，生成文件不能手改。
 
 业务服务只能依赖 `StorageService`，不能直接依赖 `MemoryStorage`、`ProfileStoreStorage` 或 `ProfileStore`。
 `Get` 只能读取已经打开的数据；只有 `Open` 可以加载或创建默认数据。`Close` 表示保存并释放会话，不表示删除永久数据。

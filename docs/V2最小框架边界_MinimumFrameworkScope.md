@@ -18,7 +18,7 @@ V2 的目标不是“预先准备所有游戏系统”，而是让新项目能�
 | 资源 | `ServerStorage.Resources`、`ReplicatedStorage.Resources`、`ResourceService` | 区分服务器模板、客户端可读模板和运行时副本。 |
 | 纯工具 | `TableUtil.DeepCopy` | 已有多处真实调用，且不依赖 Roblox 生命周期。 |
 | UI 模板 | `Resources.UI`、每个 GUI 自己的 Controller | 已解决模板来源和运行时 `PlayerGui` 副本的职责问题。 |
-| 配置构建 | 双表头 Excel、Schema、Luau 生成工具 | 三人团队已有策划直接调数需求；工具只在本地运行，不进入 Roblox 运行时。 |
+| 配置构建 | 三行表头 Excel、Schema、Luau 生成工具 | 三人团队已有策划直接调数需求；工具只在本地运行，不进入 Roblox 运行时。 |
 
 ## 当前明确不加入
 

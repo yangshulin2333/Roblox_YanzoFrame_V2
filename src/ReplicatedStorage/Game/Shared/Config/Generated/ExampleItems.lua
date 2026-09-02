@@ -1,6 +1,6 @@
 --!strict
 -- 此文件由 Excel Config 工具自动生成，请勿手动修改。
--- 来源：design/GameConfig.xlsx / ExampleItems
+-- 来源：design/config/workbooks/GameConfig.xlsx / ExampleItems
 
 return {
 	["BasicItem"] = {
@@ -10,6 +10,7 @@ return {
 		Tier = "Common",
 		Price = 100,
 		Enabled = true,
+		Tags = { "starter", "shop" },
 	},
 	["AdvancedItem"] = {
 		Id = "AdvancedItem",
@@ -19,5 +20,6 @@ return {
 		Price = 500.5,
 		Enabled = false,
 		Note = "仅用于验证",
+		Tags = { "rare", "shop" },
 	},
 }

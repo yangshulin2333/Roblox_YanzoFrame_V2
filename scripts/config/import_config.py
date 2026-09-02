@@ -12,13 +12,22 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
 
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-SUPPORTED_TYPES = {"string", "number", "boolean"}
+SUPPORTED_TYPES = {"string", "number", "boolean", "string[]", "number[]"}
+ARRAY_ELEMENT_TYPES = {"string[]": "string", "number[]": "number"}
 SUPPORTED_SCOPES = {"Shared", "Server"}
+
+
+HEADER_STYLES = {
+    1: {"fill": "FFDDEBF7", "font": "FF17365D", "size": 11},
+    2: {"fill": "FF1F4E78", "font": "FFFFFFFF", "size": 10},
+    3: {"fill": "FFD9E2F3", "font": "FF17365D", "size": 10},
+}
 
 
 @dataclass(frozen=True)
@@ -71,12 +80,17 @@ def validate_schema(schema: dict[str, Any]) -> None:
         raise ConfigFailure(issues)
 
     layout = schema.get("layout")
-    expected_layout = {"descriptionRow": 1, "keyRow": 2, "dataStartRow": 3}
+    expected_layout = {
+        "descriptionRow": 1,
+        "keyRow": 2,
+        "typeRow": 3,
+        "dataStartRow": 4,
+    }
     if layout != expected_layout:
         issues.append(
             ConfigIssue(
                 "CONFIG_SCHEMA_INVALID",
-                "layout 必须固定为中文说明第 1 行、英文键名第 2 行、数据第 3 行起",
+                "layout 必须固定为中文说明第 1 行、英文键名第 2 行、类型第 3 行、数据第 4 行起",
             )
         )
 
@@ -103,6 +117,21 @@ def validate_schema(schema: dict[str, Any]) -> None:
             continue
         sheet_names.add(name)
         sheet_map[name] = sheet
+
+        workbook_name = sheet.get("workbook")
+        if (
+            not isinstance(workbook_name, str)
+            or Path(workbook_name).name != workbook_name
+            or Path(workbook_name).suffix.lower() != ".xlsx"
+            or workbook_name.startswith("~$")
+        ):
+            issues.append(
+                ConfigIssue(
+                    "CONFIG_SCHEMA_INVALID",
+                    "workbook 必须是 workbooks 目录下的 .xlsx 文件名",
+                    sheet=name,
+                )
+            )
 
         if not isinstance(sheet.get("descriptionZh"), str) or not sheet[
             "descriptionZh"
@@ -164,6 +193,14 @@ def validate_schema(schema: dict[str, Any]) -> None:
                         sheet=name,
                     )
                 )
+            if column.get("unique") is True and column.get("type") in ARRAY_ELEMENT_TYPES:
+                issues.append(
+                    ConfigIssue(
+                        "CONFIG_SCHEMA_INVALID",
+                        f"字段 {key} 的数组类型不能声明 unique",
+                        sheet=name,
+                    )
+                )
             if "enum" in column and (
                 not isinstance(column["enum"], list) or not column["enum"]
             ):
@@ -171,6 +208,14 @@ def validate_schema(schema: dict[str, Any]) -> None:
                     ConfigIssue(
                         "CONFIG_SCHEMA_INVALID",
                         f"字段 {key} 的 enum 必须是数组",
+                        sheet=name,
+                    )
+                )
+            if "enum" in column and column.get("type") in ARRAY_ELEMENT_TYPES:
+                issues.append(
+                    ConfigIssue(
+                        "CONFIG_SCHEMA_INVALID",
+                        f"字段 {key} 的数组类型暂不支持 enum",
                         sheet=name,
                     )
                 )
@@ -261,7 +306,164 @@ def validate_schema(schema: dict[str, Any]) -> None:
         raise ConfigFailure(issues)
 
 
-def read_workbook_model(path: Path, data_start_row: int) -> dict[str, Any]:
+def style_header_cell(cell: Any, row_number: int) -> None:
+    style = HEADER_STYLES[row_number]
+    thin = Side(style="thin", color="FFB4C6E7")
+    cell.font = Font(
+        name="Microsoft YaHei",
+        size=style["size"],
+        bold=True,
+        color=style["font"],
+    )
+    cell.fill = PatternFill("solid", fgColor=style["fill"])
+    cell.alignment = Alignment(
+        horizontal="left" if row_number == 1 else "center",
+        vertical="center",
+        wrap_text=True,
+    )
+    cell.border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+
+def write_sheet_headers(
+    worksheet: Any,
+    sheet: dict[str, Any],
+    layout: dict[str, int],
+    start_column: int = 1,
+) -> None:
+    columns = sheet["columns"]
+    for column_number in range(start_column, len(columns) + 1):
+        column = columns[column_number - 1]
+        values = {
+            layout["descriptionRow"]: column["descriptionZh"],
+            layout["keyRow"]: column["key"],
+            layout["typeRow"]: column["type"],
+        }
+        for row_number, value in values.items():
+            cell = worksheet.cell(row_number, column_number, value)
+            style_header_cell(cell, row_number)
+
+        description_width = len(column["descriptionZh"]) * 2 + 4
+        worksheet.column_dimensions[get_column_letter(column_number)].width = max(
+            14, min(42, description_width)
+        )
+
+    worksheet.row_dimensions[layout["descriptionRow"]].height = 34
+    worksheet.row_dimensions[layout["keyRow"]].height = 24
+    worksheet.row_dimensions[layout["typeRow"]].height = 22
+
+
+def non_blank_header_keys(worksheet: Any, key_row: int) -> list[Any]:
+    keys = [
+        clean_value(worksheet.cell(key_row, column).value)
+        for column in range(1, worksheet.max_column + 1)
+    ]
+    while keys and is_blank(keys[-1]):
+        keys.pop()
+    return keys
+
+
+def save_workbook_atomic(workbook: Any, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.stem}.config-sync-{uuid.uuid4().hex}.xlsx")
+    try:
+        workbook.save(temporary)
+        os.replace(temporary, path)
+    except OSError as error:
+        raise ConfigFailure(
+            [
+                ConfigIssue(
+                    "CONFIG_WORKBOOK_WRITE_FAILED",
+                    f"无法更新 {path.name}，请关闭 Excel 后重试：{error}",
+                )
+            ]
+        ) from error
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def sync_workbooks_from_schema(
+    directory: Path, schema: dict[str, Any]
+) -> list[str]:
+    """只补齐安全缺失的结构；绝不移动、删除或覆盖已有数据。"""
+    directory.mkdir(parents=True, exist_ok=True)
+    layout = schema["layout"]
+    by_workbook: dict[str, list[dict[str, Any]]] = {}
+    for sheet in schema["sheets"]:
+        by_workbook.setdefault(sheet["workbook"], []).append(sheet)
+
+    changes: list[str] = []
+    for workbook_name, sheets in by_workbook.items():
+        path = directory / workbook_name
+        if path.exists():
+            try:
+                workbook = load_workbook(path, data_only=False, read_only=False)
+            except Exception as error:
+                raise ConfigFailure(
+                    [
+                        ConfigIssue(
+                            "CONFIG_WORKBOOK_READ_FAILED",
+                            f"无法读取 Excel：{error}",
+                        )
+                    ]
+                ) from error
+        else:
+            workbook = Workbook()
+            workbook.remove(workbook.active)
+
+        workbook_changed = False
+        try:
+            for sheet in sheets:
+                sheet_name = sheet["name"]
+                if sheet_name not in workbook.sheetnames:
+                    worksheet = workbook.create_sheet(sheet_name)
+                    write_sheet_headers(worksheet, sheet, layout)
+                    worksheet.freeze_panes = f"A{layout['dataStartRow']}"
+                    changes.append(
+                        f"CONFIG_WORKBOOK_SYNCED | Workbook={workbook_name} | "
+                        f"Sheet={sheet_name} | Action=CREATE_SHEET"
+                    )
+                    workbook_changed = True
+                    continue
+
+                worksheet = workbook[sheet_name]
+                actual_keys = non_blank_header_keys(worksheet, layout["keyRow"])
+                expected_keys = [column["key"] for column in sheet["columns"]]
+
+                if not actual_keys:
+                    write_sheet_headers(worksheet, sheet, layout)
+                    worksheet.freeze_panes = f"A{layout['dataStartRow']}"
+                    changes.append(
+                        f"CONFIG_WORKBOOK_SYNCED | Workbook={workbook_name} | "
+                        f"Sheet={sheet_name} | Action=CREATE_HEADERS"
+                    )
+                    workbook_changed = True
+                elif (
+                    len(actual_keys) < len(expected_keys)
+                    and expected_keys[: len(actual_keys)] == actual_keys
+                ):
+                    write_sheet_headers(
+                        worksheet,
+                        sheet,
+                        layout,
+                        start_column=len(actual_keys) + 1,
+                    )
+                    changes.append(
+                        f"CONFIG_WORKBOOK_SYNCED | Workbook={workbook_name} | "
+                        f"Sheet={sheet_name} | Action=APPEND_COLUMNS"
+                    )
+                    workbook_changed = True
+
+            if workbook_changed:
+                if workbook.worksheets:
+                    workbook.active = 0
+                save_workbook_atomic(workbook, path)
+        finally:
+            workbook.close()
+
+    return changes
+
+
+def read_workbook_model(path: Path, layout: dict[str, int]) -> dict[str, Any]:
     try:
         # 普通模式能稳定读取由不同工具生成的工作表尺寸；这里只读取，不保存 Excel。
         workbook = load_workbook(path, data_only=False, read_only=False)
@@ -281,11 +483,15 @@ def read_workbook_model(path: Path, data_start_row: int) -> dict[str, Any]:
 
             model["sheets"][worksheet.title] = {
                 "descriptions": [
-                    worksheet.cell(1, column).value
+                    worksheet.cell(layout["descriptionRow"], column).value
                     for column in range(1, worksheet.max_column + 1)
                 ],
                 "keys": [
-                    worksheet.cell(2, column).value
+                    worksheet.cell(layout["keyRow"], column).value
+                    for column in range(1, worksheet.max_column + 1)
+                ],
+                "types": [
+                    worksheet.cell(layout["typeRow"], column).value
                     for column in range(1, worksheet.max_column + 1)
                 ],
                 "rows": [
@@ -296,14 +502,81 @@ def read_workbook_model(path: Path, data_start_row: int) -> dict[str, Any]:
                             for column in range(1, worksheet.max_column + 1)
                         ],
                     }
-                    for row_number in range(data_start_row, worksheet.max_row + 1)
+                    for row_number in range(
+                        layout["dataStartRow"], worksheet.max_row + 1
+                    )
                 ],
                 "formulas": formulas,
+                "workbook": path.name,
             }
     finally:
         workbook.close()
 
     return model
+
+
+def read_workbooks_model(directory: Path, layout: dict[str, int]) -> dict[str, Any]:
+    if not directory.is_dir():
+        raise ConfigFailure(
+            [ConfigIssue("CONFIG_WORKBOOK_DIR_INVALID", f"找不到 Excel 目录：{directory}")]
+        )
+
+    workbook_paths = sorted(
+        path
+        for path in directory.glob("*.xlsx")
+        if path.is_file()
+        and not path.name.startswith("~$")
+        and not path.name.startswith(".")
+    )
+    if not workbook_paths:
+        raise ConfigFailure(
+            [ConfigIssue("CONFIG_WORKBOOK_MISSING", "Excel 目录中没有可用的 .xlsx 文件")]
+        )
+
+    # 所有工作簿共用一个 Sheet 命名空间，避免生成同名 Luau 时互相覆盖。
+    model: dict[str, Any] = {"sheetNames": [], "sheets": {}}
+    issues: list[ConfigIssue] = []
+    for workbook_path in workbook_paths:
+        workbook_model = read_workbook_model(workbook_path, layout)
+        for sheet_name in workbook_model["sheetNames"]:
+            if sheet_name in model["sheets"]:
+                previous = model["sheets"][sheet_name]["workbook"]
+                issues.append(
+                    ConfigIssue(
+                        "CONFIG_DUPLICATE_SHEET",
+                        f"Sheet 同时存在于 {previous} 和 {workbook_path.name}",
+                        sheet=sheet_name,
+                    )
+                )
+                continue
+            model["sheetNames"].append(sheet_name)
+            model["sheets"][sheet_name] = workbook_model["sheets"][sheet_name]
+
+    if issues:
+        raise ConfigFailure(issues)
+    return model
+
+
+def parse_array_value(value: Any, expected_type: str) -> list[Any] | None:
+    if not isinstance(value, str):
+        return None
+
+    parts = [part.strip() for part in value.split(",")]
+    if not parts or any(part == "" for part in parts):
+        return None
+    if expected_type == "string[]":
+        return parts
+
+    numbers: list[int | float] = []
+    for part in parts:
+        try:
+            number = float(part)
+        except ValueError:
+            return None
+        if not math.isfinite(number):
+            return None
+        numbers.append(int(number) if number.is_integer() else number)
+    return numbers
 
 
 def validate_value(
@@ -335,6 +608,8 @@ def validate_value(
             value = True
         elif value.upper() == "FALSE":
             value = False
+    elif expected_type in ARRAY_ELEMENT_TYPES:
+        value = parse_array_value(value, expected_type)
     valid_type = (
         (expected_type == "string" and isinstance(value, str))
         or (
@@ -344,6 +619,7 @@ def validate_value(
             and math.isfinite(value)
         )
         or (expected_type == "boolean" and isinstance(value, bool))
+        or (expected_type in ARRAY_ELEMENT_TYPES and isinstance(value, list))
     )
     if not valid_type:
         issues.append(
@@ -416,8 +692,19 @@ def validate_workbook_model(
         columns = sheet["columns"]
         expected_descriptions = [column["descriptionZh"] for column in columns]
         expected_keys = [column["key"] for column in columns]
+        expected_types = [column["type"] for column in columns]
         actual_descriptions = actual.get("descriptions", [])
         actual_keys = actual.get("keys", [])
+        actual_types = actual.get("types", [])
+
+        if actual.get("workbook") != sheet["workbook"]:
+            issues.append(
+                ConfigIssue(
+                    "CONFIG_SHEET_WRONG_WORKBOOK",
+                    f"Sheet 应放在 {sheet['workbook']}，当前位于 {actual.get('workbook')}",
+                    sheet_name,
+                )
+            )
 
         for column_number, expected in enumerate(expected_descriptions, start=1):
             found = actual_descriptions[column_number - 1] if column_number <= len(actual_descriptions) else None
@@ -443,14 +730,27 @@ def validate_workbook_model(
                         column_number,
                     )
                 )
+        for column_number, expected in enumerate(expected_types, start=1):
+            found = actual_types[column_number - 1] if column_number <= len(actual_types) else None
+            if clean_value(found) != expected:
+                issues.append(
+                    ConfigIssue(
+                        "CONFIG_TYPE_HEADER_MISMATCH",
+                        f"字段类型应为：{expected}",
+                        sheet_name,
+                        3,
+                        column_number,
+                    )
+                )
 
         max_actual_columns = max(
-            [len(actual_descriptions), len(actual_keys)]
+            [len(actual_descriptions), len(actual_keys), len(actual_types)]
             + [len(row.get("values", [])) for row in actual.get("rows", [])]
         )
         for column_number in range(len(columns) + 1, max_actual_columns + 1):
             description = actual_descriptions[column_number - 1] if column_number <= len(actual_descriptions) else None
             key = actual_keys[column_number - 1] if column_number <= len(actual_keys) else None
+            field_type = actual_types[column_number - 1] if column_number <= len(actual_types) else None
             data_row = next(
                 (
                     row
@@ -460,13 +760,25 @@ def validate_workbook_model(
                 ),
                 None,
             )
-            if not is_blank(description) or not is_blank(key) or data_row is not None:
+            if (
+                not is_blank(description)
+                or not is_blank(key)
+                or not is_blank(field_type)
+                or data_row is not None
+            ):
+                issue_row = 1
+                if is_blank(description) and not is_blank(key):
+                    issue_row = 2
+                elif is_blank(description) and is_blank(key) and not is_blank(field_type):
+                    issue_row = 3
+                elif is_blank(description) and is_blank(key) and is_blank(field_type):
+                    issue_row = data_row["row"] if data_row is not None else 3
                 issues.append(
                     ConfigIssue(
                         "CONFIG_UNKNOWN_COLUMN",
                         "Excel 中存在 Schema 未声明的字段",
                         sheet_name,
-                        data_row["row"] if is_blank(key) and data_row is not None else 2,
+                        issue_row,
                         column_number,
                     )
                 )
@@ -560,6 +872,8 @@ def lua_value(value: Any) -> str:
         return format(value, ".15g")
     if isinstance(value, str):
         return json.dumps(value, ensure_ascii=False)
+    if isinstance(value, list):
+        return "{ " + ", ".join(lua_value(item) for item in value) + " }"
     raise TypeError(f"Unsupported Luau value: {value!r}")
 
 
@@ -573,18 +887,22 @@ def build_outputs(
         lines = [
             "--!strict",
             "-- 此文件由 Excel Config 工具自动生成，请勿手动修改。",
-            f"-- 来源：design/GameConfig.xlsx / {sheet_name}",
+            f"-- 来源：design/config/workbooks/{sheet['workbook']} / {sheet_name}",
             "",
-            "return {",
         ]
-        for row in typed_rows[sheet_name]:
-            lines.append(f"\t[{lua_value(row[primary_key])}] = {{")
-            for column in sheet["columns"]:
-                key = column["key"]
-                if key in row:
-                    lines.append(f"\t\t{key} = {lua_value(row[key])},")
-            lines.append("\t},")
-        lines.extend(["}", ""])
+        rows = typed_rows[sheet_name]
+        if not rows:
+            lines.extend(["return {}", ""])
+        else:
+            lines.append("return {")
+            for row in rows:
+                lines.append(f"\t[{lua_value(row[primary_key])}] = {{")
+                for column in sheet["columns"]:
+                    key = column["key"]
+                    if key in row:
+                        lines.append(f"\t\t{key} = {lua_value(row[key])},")
+                lines.append("\t},")
+            lines.extend(["}", ""])
         outputs[sheet["scope"]][f"{sheet_name}.lua"] = "\n".join(lines)
     return outputs
 
@@ -625,9 +943,8 @@ def check_outputs(repo_root: Path, outputs: dict[str, dict[str, str]]) -> list[C
 
 
 def write_outputs_atomic(repo_root: Path, outputs: dict[str, dict[str, str]]) -> None:
-    # 先写临时目录；两个范围都准备好后才替换旧 Generated 目录。
+    # 临时文件和旧目录都留在 src 外，避免 Rojo/Luau 监听到短暂备份路径。
     temp_root = Path(tempfile.mkdtemp(prefix=".config-build-", dir=repo_root))
-    token = uuid.uuid4().hex
     targets = output_targets(repo_root)
     replaced: list[tuple[Path, Path | None]] = []
     try:
@@ -639,7 +956,7 @@ def write_outputs_atomic(repo_root: Path, outputs: dict[str, dict[str, str]]) ->
 
         for scope, target in targets.items():
             target.parent.mkdir(parents=True, exist_ok=True)
-            backup = target.with_name(f"{target.name}.config-backup-{token}")
+            backup = temp_root / f"{scope}.previous"
             previous_backup: Path | None = None
             if target.exists():
                 os.replace(target, backup)
@@ -652,9 +969,13 @@ def write_outputs_atomic(repo_root: Path, outputs: dict[str, dict[str, str]]) ->
                 raise
             replaced.append((target, previous_backup))
 
+        # 两个目录都替换成功后即视为提交完成；旧备份清理失败不能再触发回滚。
         for _, backup in replaced:
             if backup is not None and backup.exists():
-                shutil.rmtree(backup)
+                try:
+                    shutil.rmtree(backup)
+                except OSError:
+                    pass
     except Exception:
         for target, backup in reversed(replaced):
             if target.exists():
@@ -668,13 +989,16 @@ def write_outputs_atomic(repo_root: Path, outputs: dict[str, dict[str, str]]) ->
 
 def run(args: argparse.Namespace) -> int:
     repo_root = Path(args.repo_root).resolve()
-    workbook_path = Path(args.workbook).resolve()
+    workbook_dir = Path(args.workbook_dir).resolve()
     schema_path = Path(args.schema).resolve()
 
     try:
         schema = load_schema(schema_path)
         validate_schema(schema)
-        model = read_workbook_model(workbook_path, schema["layout"]["dataStartRow"])
+        if not args.check:
+            for change in sync_workbooks_from_schema(workbook_dir, schema):
+                print(change)
+        model = read_workbooks_model(workbook_dir, schema["layout"])
         typed_rows, issues = validate_workbook_model(model, schema)
         if issues:
             raise ConfigFailure(issues)
@@ -700,9 +1024,9 @@ def run(args: argparse.Namespace) -> int:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="将双表头 Excel Config 生成确定性的 Luau 模块")
+    parser = argparse.ArgumentParser(description="将三行表头 Excel Config 生成确定性的 Luau 模块")
     parser.add_argument("--repo-root", required=True)
-    parser.add_argument("--workbook", required=True)
+    parser.add_argument("--workbook-dir", required=True)
     parser.add_argument("--schema", required=True)
     parser.add_argument("--check", action="store_true")
     return parser.parse_args()
