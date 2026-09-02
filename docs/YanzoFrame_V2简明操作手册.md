@@ -182,9 +182,9 @@ cd D:\AI\Codex\Codex_ModuleDev\YanzoFrame_V2
 powershell -ExecutionPolicy Bypass -File .\scripts\Serve-Rojo.ps1
 ```
 
-这个脚本会先 `wally install` 重新生成 `ServerPackages/`（它被 `.gitignore` 排除，不重装会导致 `rojo serve` 因为 `$path` 找不到 `ProfileStore.luau` 而报错退出），再用 Rokit 锁定版本的 `rojo` 启动服务。不要自己手打裸的 `rojo`/`wally` 命令——这台机器的 PATH 里可能还装着版本不同的全局 `rojo`（例如 WinGet 装的），裸命令解析到那个版本会导致插件和服务端协议不匹配，报 `protocolVersion` 相关的错误。
+这个脚本会先 `wally install` 重新生成 `ServerPackages/`（它被 `.gitignore` 排除，不重装会导致 `rojo serve` 因为 `$path` 找不到 `ProfileStore.luau` 而报错退出），再用 Rokit 锁定版本的 `rojo` 启动服务。默认端口是 `34872`；同时打开多个项目时使用 `.\scripts\Serve-Rojo.ps1 -Port 34873` 指定不同端口。端口被占用时会显示进程信息，并提供停止旧 Rojo、输入其他端口或取消三种选择；非 Rojo 占用者不会被终止。自动化流程需要替换旧 Rojo 时可追加 `-StopExistingRojo`。不要自己手打裸的 `rojo`/`wally` 命令——这台机器的 PATH 里可能还装着版本不同的全局 `rojo`（例如 WinGet 装的），裸命令解析到那个版本会导致插件和服务端协议不匹配，报 `protocolVersion` 相关的错误。
 
-在 Roblox Studio 的 Rojo 插件连接 `127.0.0.1:34872`。
+在 Roblox Studio 的 Rojo 插件连接脚本输出的地址，例如 `127.0.0.1:34872` 或 `127.0.0.1:34873`。
 
 ### 修改后验证
 

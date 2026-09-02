@@ -20,7 +20,7 @@
 - NetService / NetClient
 - MemoryStorage / ProfileStoreStorage / StorageService
 - Framework/Game 显式 Service 与 Controller 列表
-- 双表头 Excel Config 校验与 Luau 生成
+- 三行表头 Excel Config 校验与 Luau 生成
 
 当前版本是 `StorageModule V1.1`：`MemoryStorage` 用于测试，`ProfileStoreStorage` 通过 ProfileStore 保存正式玩家档案。
 
@@ -55,7 +55,26 @@
 | `tests` | 仅服务器可见的最小行为测试；默认不自动运行 |
 | `docs` | 学习规则和模块设计文档 |
 | `scripts` | 本地验证脚本 |
-| `design` | 策划编辑的 Excel 与程序维护的 Schema |
+| `design/config/workbooks` | 策划编辑的一个或多个 Excel 配置工作簿 |
+| `design/config/config-schema.json` | 程序或 Codex 维护的 Config 字段规则 |
+
+## 创建独立新项目
+
+在框架母版根目录输入一次游戏显示名：
+
+```powershell
+.\scripts\New-Game.ps1 "WoodenMan-123"
+```
+
+脚本会把显示名 `WoodenMan-123` 自动转换为内部标识 `WoodenMan_123`，在框架母版旁边创建同名目录，并推导 Remote 根目录名与 ProfileStore 名。确认摘要后，它会创建独立目录，将未发布项目的开发存储设为 `Memory`，安装依赖，运行 Config 与模块验证，并初始化无 Commit、无 Remote 的本地 Git 仓库。目标目录已经存在时会停止，不会覆盖。
+
+只预览、不创建时追加 `-WhatIf`；自动化调用需要跳过确认时追加 `-Yes`。源模板存在未提交改动时，脚本默认停止；确实要复制当前未提交状态时必须显式追加 `-AllowDirty`。需要自定义内部标识或目标路径时，仍可直接使用底层 `New-YanzoProject.ps1`。
+
+完整说明见 `docs/新项目创建工作流_NewProjectWorkflow.md`。修改生成器后运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ProjectTool.ps1
+```
 
 ## 常用命令
 
@@ -75,14 +94,18 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ModuleBase.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\Setup-ConfigTool.ps1
 ```
 
-策划修改 `design/GameConfig.xlsx` 后执行：
+新增表结构时，程序或 Codex 先修改 Schema；策划只填写 Excel 第 4 行以后的数据。统一执行：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\Import-GameConfig.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ConfigTool.ps1
 ```
 
-Excel 固定使用两层表头：第 1 行是中文释义，第 2 行是英文键名，第 3 行起才是数据。完整规则见 `docs/Excel配置工作流_ExcelConfigWorkflow.md`。
+`Import-GameConfig.ps1` 会按 Schema 安全创建缺失的工作簿、Sheet 和三行表头，也会在现有键名保持前缀一致时追加新字段；它不会移动、删除或覆盖已有数据。需要创建结构时先关闭 Excel，普通数据导表不需要改 Schema。
+
+简单规则：改 Schema 时先关闭 Excel；只改第 4 行以后的数据时保存即可。新增工作簿也只在 Schema 中指定文件名，由导表工具自动创建，不需要手工新建空 Excel。
+
+Excel 固定使用三行表头：第 1 行是中文释义，第 2 行是英文键名，第 3 行是字段类型，第 4 行起才是数据。完整规则见 `docs/Excel配置工作流_ExcelConfigWorkflow.md`。
 
 不要直接依赖 `stylua`、`selene`、`rojo` 或 `wally` 的裸命令。Windows PATH 可能优先命中 Cargo 或其他全局版本；本项目以 `rokit.toml` 和 `$env:USERPROFILE\.rokit\bin` 中的工具作为唯一验证入口。
 
@@ -157,7 +180,13 @@ docs/Git简化工作流_GitSimpleWorkflow.md
 powershell -ExecutionPolicy Bypass -File .\scripts\Serve-Rojo.ps1
 ```
 
-然后在 Roblox Studio 中连接 Rojo 插件。不要手打裸的 `rojo serve` —— Windows PATH 上可能还装着版本不同的全局 `rojo`（比如 WinGet 装的），版本对不上会导致插件报 `protocolVersion` 相关的错误。
+默认使用 `34872`。同时打开多个项目时，为每个项目指定不同端口：
+
+```powershell
+.\scripts\Serve-Rojo.ps1 -Port 34873
+```
+
+如果端口被占用，脚本会显示 PID 和进程名，并提供 `[S]` 停止旧 Rojo、`[P]` 输入其他端口、`[C]` 取消。只有占用者能确认是同端口 `rojo.exe serve` 时才提供停止选项；其他程序占用时只能换端口或取消。自动化流程需要替换旧 Rojo 时可追加 `-StopExistingRojo`。然后在 Roblox Studio 中连接对应端口。不要手打裸的 `rojo serve` —— Windows PATH 上可能还装着版本不同的全局 `rojo`（比如 WinGet 装的），版本对不上会导致插件报 `protocolVersion` 相关的错误。
 
 修改 `default.project.json` 或首次执行 `wally install` 后，需要停止并重新运行上面的脚本，再让 Studio 重新连接。
 

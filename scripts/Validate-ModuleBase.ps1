@@ -1,7 +1,9 @@
 ﻿$ErrorActionPreference = "Stop"
 
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
-$buildPath = Join-Path ([System.IO.Path]::GetTempPath()) "YanzoFrame_V2_Base_Check.rbxlx"
+$project = Get-Content -LiteralPath (Join-Path $Root "default.project.json") -Raw | ConvertFrom-Json
+$safeProjectName = [Regex]::Replace($project.name, "[^A-Za-z0-9_-]", "_")
+$buildPath = Join-Path ([System.IO.Path]::GetTempPath()) "${safeProjectName}_Base_Check.rbxlx"
 Push-Location $Root
 
 try {
