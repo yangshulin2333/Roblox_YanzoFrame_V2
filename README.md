@@ -1,14 +1,14 @@
 # YanzoFrame_V2
 
-> 当前最新稳定标签是 `v2.1.0-storage-reliability`。
+> 当前最新稳定标签是 `v2.2.0-project-workflow`。
 
-这是从 `YanzoFrame_V0` 复制出来的 Roblox 可复用框架工程。`v2.1.0` 已冻结 StorageModule 稳定基线，后续阶段在此基础上补充明确的项目接入边界。
+这是从 `YanzoFrame_V0` 复制出来的 Roblox 可复用框架工程。`v2.2.0` 已冻结 Framework/Game 分层、Excel Config、策划模板、新项目工作流和 Remote 请求限流能力。
 
 它不是完整游戏工程，也不包含具体玩法。它的目标是让通用底座可以单独理解、单独验证，并让具体项目通过 `Game` 入口接入。
 
 ## 当前定位
 
-`YanzoFrame_V0` 已冻结。本项目以 V2.1 StorageModule 为稳定基线，当前开发分支已分离 `Framework` / `Game`，并加入策划使用的 Excel Config 构建工具。
+`YanzoFrame_V0` 已冻结。本项目以 V2.1 StorageModule 为存储基线，V2.2 已完成 `Framework` / `Game` 分离，并加入策划使用的 Excel Config、新项目创建和 Remote 请求限流工具。
 
 当前仍保留 V0 的最小底座能力：
 

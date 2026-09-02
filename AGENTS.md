@@ -4,7 +4,7 @@
 
 ## 固定目标
 
-`YanzoFrame_V0` 已冻结，`v2.1.0-storage-reliability` 是当前稳定基线。后续只在独立阶段中推进经过确认的框架能力。
+`YanzoFrame_V0` 已冻结，`v2.2.0-project-workflow` 是当前稳定基线。后续只在独立阶段中推进经过确认的框架能力。
 
 当前固定目标：
 
@@ -94,3 +94,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Validate-ConfigTool.ps1
 涉及 Roblox Studio 的内容，还需要 Studio 手动确认。
 
 `tests` 只放服务器侧最小行为测试。测试映射到 `ServerStorage.UnitTest`，`UnitTestRunner` 必须默认禁用，不能让普通 Play 自动执行测试。
+
+<!-- CODEGRAPH_START -->
+## CodeGraph
+
+In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
+
+- **MCP tool** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them, including dynamic-dispatch hops grep can't follow. Name a file or symbol in the query to read its current line-numbered source. If it's listed but deferred, load it by name via tool search.
+- **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
+
+If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
+<!-- CODEGRAPH_END -->
